@@ -1,7 +1,15 @@
 {
   "name": "el-table-draggable",
   "version": "0.1.0",
-  "private": true,
+  "author": {
+    "name": "mizuka",
+    "email": "mizuka.wu@outlook.com",
+    "url": "https://www.mizuka.top"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mizuka-wu/el-table-draggable.git"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --target lib --name ElTableDraggable src/components/ElTableDraggable.vue",
