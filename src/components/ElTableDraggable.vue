@@ -1,8 +1,6 @@
 <template>
   <div ref="wrapper">
-    <div :key="tableKey">
-      <slot></slot>
-    </div>
+    <slot></slot>
   </div>
 </template>
 
@@ -20,13 +18,12 @@ export default {
       default: 100
     }
   },
-  data() {
-    return {
-      tableKey: 0
-    };
-  },
   methods: {
     makeTableSortAble() {
+      console.log(this.$attrs, this.$listeners)
+      if (!this.$children[0].$el) {
+        throw new Error("添加slot")
+      }
       const table = this.$children[0].$el.querySelector(
         ".el-table__body-wrapper tbody"
       );
@@ -37,8 +34,6 @@ export default {
           this.$emit("drag");
         },
         onEnd: ({ newIndex, oldIndex }) => {
-          this.keepWrapperHeight(true);
-          this.tableKey = Math.random();
           const arr = this.$children[0].data;
           const targetRow = arr.splice(oldIndex, 1)[0];
           arr.splice(newIndex, 0, targetRow);
@@ -46,26 +41,9 @@ export default {
         }
       });
     },
-    keepWrapperHeight(keep) {
-      // eslint-disable-next-line prefer-destructuring
-      const wrapper = this.$refs.wrapper;
-      if (keep) {
-        wrapper.style.minHeight = `${wrapper.clientHeight}px`;
-      } else {
-        wrapper.style.minHeight = "auto";
-      }
-    }
   },
   mounted() {
     this.makeTableSortAble();
   },
-  watch: {
-    tableKey() {
-      this.$nextTick(() => {
-        this.makeTableSortAble();
-        this.keepWrapperHeight(false);
-      });
-    }
-  }
 };
 </script>
