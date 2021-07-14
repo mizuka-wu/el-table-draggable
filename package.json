@@ -7,8 +7,13 @@
     "build": "vue-cli-service build --target lib --name ElTableDraggable src/components/ElTableDraggable.vue",
     "lint": "vue-cli-service lint"
   },
+  "main": "dist/ElTableDraggable.umd.js",
+  "files": [
+    "dist/"
+  ],
   "dependencies": {
     "core-js": "^3.6.5",
+    "sortablejs": "^1.14.0",
     "vue": "^2.6.11"
   },
   "devDependencies": {
@@ -16,6 +21,7 @@
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "babel-eslint": "^10.1.0",
+    "element-ui": "^2.15.3",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
     "vue-template-compiler": "^2.6.11"
