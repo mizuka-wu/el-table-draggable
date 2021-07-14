@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import sortable from "sortablejs";
+import Sortable from "sortablejs";
 export default {
   name: "ElementUiElTableDraggable",
   props: {
@@ -22,7 +22,7 @@ export default {
       const table = this.$children[0].$el.querySelector(
         ".el-table__body-wrapper tbody"
       );
-      sortable.create(table, {
+      Sortable.create(table, {
         ...this.$attrs,
         onStart: () => {
           this.$emit("drag");
