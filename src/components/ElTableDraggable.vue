@@ -28,8 +28,7 @@ export default {
         ".el-table__body-wrapper tbody"
       );
       sortable.create(table, {
-        handle: this.handle,
-        animation: this.animate,
+        ...this.$attrs,
         onStart: () => {
           this.$emit("drag");
         },

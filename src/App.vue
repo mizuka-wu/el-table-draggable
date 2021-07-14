@@ -1,6 +1,13 @@
 <template>
   <div id="app">
-    <ElTableDraggable>
+    <h1>表1</h1>
+    <ElTableDraggable group="table">
+      <el-table :data="data">
+        <el-table-column :key="key" :prop="key" :label="key" v-for="key of keys" />
+      </el-table>
+    </ElTableDraggable>
+    <h1>表1</h1>
+    <ElTableDraggable group="table">
       <el-table :data="data">
         <el-table-column :key="key" :prop="key" :label="key" v-for="key of keys" />
       </el-table>
@@ -19,7 +26,13 @@ export default {
   data() {
     return {
       keys: ["a", "b", "c", "d"],
-      data: Array.from(new Array(10)).map((key, index) => ({
+      data: Array.from(new Array(5)).map((key, index) => ({
+        a: index,
+        b: index,
+        c: index,
+        d: index
+      })),
+      data2: Array.from(new Array(5)).map((key, index) => ({
         a: index,
         b: index,
         c: index,
