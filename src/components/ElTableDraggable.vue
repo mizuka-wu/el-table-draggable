@@ -9,18 +9,13 @@ import sortable from "sortablejs";
 export default {
   name: "ElementUiElTableDraggable",
   props: {
-    handle: {
-      type: String,
-      default: ""
+    value: {
+      type: Array,
+      default: () => []
     },
-    animate: {
-      type: Number,
-      default: 100
-    }
   },
   methods: {
     makeTableSortAble() {
-      console.log(this.$attrs, this.$listeners)
       if (!this.$children[0].$el) {
         throw new Error("添加slot")
       }
