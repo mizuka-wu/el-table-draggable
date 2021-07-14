@@ -2,13 +2,13 @@
   <div id="app">
     <h1>表1</h1>
     <ElTableDraggable group="table">
-      <el-table :data="data">
+      <el-table row-key="a" :data="data">
         <el-table-column :key="key" :prop="key" :label="key" v-for="key of keys" />
       </el-table>
     </ElTableDraggable>
     <h1>表1</h1>
     <ElTableDraggable group="table">
-      <el-table :data="data">
+      <el-table row-key="a" :data="data">
         <el-table-column :key="key" :prop="key" :label="key" v-for="key of keys" />
       </el-table>
     </ElTableDraggable>

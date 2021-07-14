@@ -6,6 +6,7 @@
 
 <script>
 import Sortable from "sortablejs";
+
 export default {
   name: "ElementUiElTableDraggable",
   props: {
@@ -21,7 +22,7 @@ export default {
     }
   },
   methods: {
-    makeTableSortAble() {
+    init() {
       if (!this.$children[0].$el) {
         throw new Error("添加slot")
       }
@@ -31,19 +32,21 @@ export default {
       this.sortable = Sortable.create(table, {
         ...this.$attrs,
         onStart: () => {
-          this.$emit("drag");
         },
         onEnd: ({ newIndex, oldIndex }) => {
-          const arr = this.$children[0].data;
-          const targetRow = arr.splice(oldIndex, 1)[0];
-          arr.splice(newIndex, 0, targetRow);
-          this.$emit("drop", { targetObject: targetRow, list: arr });
+          const table = this.$children[0]
+          const array = table.data;
+          const targetRow = array.splice(oldIndex, 1)[0];
+          array.splice(newIndex, 0, targetRow);
+          this.$nextTick(() => {
+            console.log(window.table = table)
+          })
         }
       });
     },
   },
   mounted() {
-    this.makeTableSortAble();
+    this.init();
   },
   beforeDestroy() {
     if (this._sortable !== undefined) this._sortable.destroy();
