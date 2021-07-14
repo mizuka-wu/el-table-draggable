@@ -14,6 +14,12 @@ export default {
       default: () => []
     },
   },
+  data() {
+    return {
+      // eslint-disable-next-line vue/no-reserved-keys
+      _sortable: null
+    }
+  },
   methods: {
     makeTableSortAble() {
       if (!this.$children[0].$el) {
@@ -22,7 +28,7 @@ export default {
       const table = this.$children[0].$el.querySelector(
         ".el-table__body-wrapper tbody"
       );
-      Sortable.create(table, {
+      this.sortable = Sortable.create(table, {
         ...this.$attrs,
         onStart: () => {
           this.$emit("drag");
@@ -38,6 +44,9 @@ export default {
   },
   mounted() {
     this.makeTableSortAble();
+  },
+  beforeDestroy() {
+    if (this._sortable !== undefined) this._sortable.destroy();
   },
 };
 </script>
