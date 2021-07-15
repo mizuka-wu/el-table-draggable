@@ -12,6 +12,7 @@
   },
   "scripts": {
     "serve": "vue-cli-service serve",
+    "build:demo": "vue-cli-service build --dest examples",
     "build": "vue-cli-service build --target lib --name ElTableDraggable src/components/ElTableDraggable.vue",
     "lint": "vue-cli-service lint"
   },
