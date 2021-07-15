@@ -43,6 +43,7 @@ export default {
 
       this._sortable = Sortable.create(this.table, {
         // 绑定sortable的option
+        filter: ".el-table__empty-block",
         ...this.$attrs,
         // 绑定事件
         ...Object.keys(this.$listeners).reduce((events, key) => {
