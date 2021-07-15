@@ -35,7 +35,7 @@ export default {
         ".el-table__body-wrapper tbody"
       );
 
-      this.sortable = Sortable.create(table, {
+      this._sortable = Sortable.create(table, {
         // 绑定sortable的option
         ...this.$attrs,
         // 绑定事件
@@ -58,12 +58,21 @@ export default {
           array.splice(newIndex, 0, targetRow);
         }
       });
-    },
+    }
   },
   watch: {
-    $attrs() {
-      this.init()
-    },
+    $attrs: {
+      deep: true,
+      handler(options) {
+        if (this._sortable) {
+          // 排除事件，目前sortable没有on开头的属性
+          const keys = Object.keys(options).filter(key => key.indexOf("on") !== 0)
+          keys.forEach(key => {
+            this._sortable.option(key, options[key])
+          })
+        }
+      }
+    }
   },
   mounted() {
     this.init();
