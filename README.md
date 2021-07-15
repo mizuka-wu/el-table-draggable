@@ -1,24 +1,39 @@
 # el-table-draggable
 
-## Project setup
+让`vue-draggable`支持`element-ui`中的`el-table`
+
+## 特性
+
+## 安装
+
+### 使用npm或者yarn
+
+```bash
+yarn add el-table-draggable
+
+npm i -S el-table-draggable
 ```
-npm install
+## 使用
+
+```js
+import ElTableDraggable from 'el-table-draggable'
+
+export default {
+    components: {
+        ElTableDraggable
+    }
+}
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
+### template
+```html
+<template>
+    <el-table-draggable>
+        <el-table></el-table>
+    </el-table-draggable>
+</template>
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### props
+
+差不多支持所有[sortablejs的option](https://github.com/SortableJS/Sortable#options)
