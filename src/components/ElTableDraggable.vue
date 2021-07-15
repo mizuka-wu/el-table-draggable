@@ -56,7 +56,8 @@ export default {
 
           return events
         }, {}),
-        onEnd: ({ newIndex, oldIndex, to, from, pullMode }) => {
+        onEnd: (evt) => {
+          const { newIndex, oldIndex, to, from, pullMode } = evt
           const toList = context.get(to).data
           const fromList = context.get(from).data
           const target = fromList[oldIndex]
@@ -77,6 +78,9 @@ export default {
               draggableContext.$emit("change", tableContext.data)
             }
           })
+
+          // 原生事件通知
+          this.$emit('end', evt)
         },
       });
     },
