@@ -1,17 +1,18 @@
 # This is a basic workflow to help you get started with Actions
 
-name: RELEASE
+name: EXAMPLE
 
-# Controls when the action will run.
+# Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    tags: "v*"
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
@@ -27,15 +28,15 @@ jobs:
           node-version: 12
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: npm run build
-      - name: GH Release
-        uses: softprops/action-gh-release@v0.1.5
+      - run: npm run build:demo
+      - name: GH Pages deploy
+        # You may pin to the exact commit or the version.
+        # uses: Cecilapp/GitHub-Pages-deploy@a6f0cf12a4874fbeb75f6393d0568fb3c86dda37
+        uses: Cecilapp/GitHub-Pages-deploy@3.2.0
         with:
-          # Creates a draft release. Defaults to false
-          draft: true
-          # Newline-delimited list of path globs for asset files to upload
-          files: |
-            dist/*
-            package.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # A verified email.
+          email: mizuka.wu@outlook.com
+          # Where static files are.
+          build_dir: examples
+          # Which branch to push files.
+          branch: gh-pages
