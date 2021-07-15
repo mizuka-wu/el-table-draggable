@@ -18,24 +18,27 @@ export default {
   data() {
     return {
       // eslint-disable-next-line vue/no-reserved-keys
-      _sortable: null
+      _sortable: null,
+      table: null
     }
   },
   methods: {
     init() {
+      const context = window.__ElTableDraggableContext
       if (!this.$children[0].$el) {
         throw new Error("添加slot")
       }
 
-      if (this._sortable) {
-        this._sortable.destroy()
-      }
+      this.destroy()
 
-      const table = this.$children[0].$el.querySelector(
+      this.table = this.$children[0].$el.querySelector(
         ".el-table__body-wrapper tbody"
       );
 
-      this._sortable = Sortable.create(table, {
+      const elTableContext = this.$children[0]
+      context.set(this.table, elTableContext)
+
+      this._sortable = Sortable.create(this.table, {
         // 绑定sortable的option
         ...this.$attrs,
         // 绑定事件
@@ -50,15 +53,33 @@ export default {
 
           return events
         }, {}),
-        onEnd: ({ newIndex, oldIndex }) => {
-          console.log(newIndex, oldIndex)
-          const table = this.$children[0]
-          const array = table.data;
-          const targetRow = array.splice(oldIndex, 1)[0];
-          array.splice(newIndex, 0, targetRow);
-        }
+        onEnd: ({ newIndex, oldIndex, to, from, pullMode }) => {
+          const toList = context.get(to).data
+          const fromList = context.get(from).data
+          const target = fromList[oldIndex]
+
+          // move的情况
+          if (pullMode !== 'clone') {
+            fromList.splice(oldIndex, 1)
+          }
+
+          toList.splice(newIndex, 0, target)
+        },
       });
-    }
+    },
+    destroy() {
+      if (this._sortable) {
+        this._sortable.destroy()
+        this._sortable = null
+        
+        /** @type {WeakMap} */
+        const context = window.__ElTableDraggableContext
+        if (context.has(this.table)) {
+          context.delete(this.table)
+        }
+        this.table = null
+      }
+    },
   },
   watch: {
     $attrs: {
@@ -75,10 +96,13 @@ export default {
     }
   },
   mounted() {
+    if (!window.__ElTableDraggableContext) {
+      window.__ElTableDraggableContext = new WeakMap()
+    }
     this.init();
   },
   beforeDestroy() {
-    if (this._sortable !== undefined) this._sortable.destroy();
+    this.destroy()
   },
 };
 </script>

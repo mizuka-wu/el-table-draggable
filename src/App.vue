@@ -9,7 +9,6 @@
       {{ data }}
       <ElTableDraggable
         :disabled="disabled"
-        @choose="onChoose"
         group="table"
       >
         <el-table
