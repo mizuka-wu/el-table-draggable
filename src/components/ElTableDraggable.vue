@@ -26,6 +26,11 @@ export default {
       if (!this.$children[0].$el) {
         throw new Error("添加slot")
       }
+
+      if (this._sortable) {
+        this._sortable.destroy()
+      }
+
       const table = this.$children[0].$el.querySelector(
         ".el-table__body-wrapper tbody"
       );
@@ -53,6 +58,11 @@ export default {
           array.splice(newIndex, 0, targetRow);
         }
       });
+    },
+  },
+  watch: {
+    $attrs() {
+      this.init()
     },
   },
   mounted() {
