@@ -29,14 +29,10 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: npm run build:demo
-      - name: GH Pages deploy
-        # You may pin to the exact commit or the version.
-        # uses: Cecilapp/GitHub-Pages-deploy@a6f0cf12a4874fbeb75f6393d0568fb3c86dda37
-        uses: Cecilapp/GitHub-Pages-deploy@3.2.0
+      - name: Deploy to GitHub Pages
+        uses: crazy-max/ghaction-github-pages@v2
         with:
-          # A verified email.
-          email: mizuka.wu@outlook.com
-          # Where static files are.
+          target_branch: gh-pages
           build_dir: examples
-          # Which branch to push files.
-          branch: gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
