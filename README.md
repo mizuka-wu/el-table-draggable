@@ -2,7 +2,12 @@
 
 让`vue-draggable`支持`element-ui`中的`el-table`
 
+[demo请查看](https://www.mizuka.top/el-table-draggable/)
+
 ## 特性
+- 支持几乎所有`sortablejs`的配置
+- 支持多个表格之间互相拖动
+- 代码提示
 
 ## 安装
 
