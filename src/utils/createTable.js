@@ -12,10 +12,6 @@ export const columns = [
         key: "url",
         type: "url"
     },
-    {
-        key: "desc",
-        type: "title"
-    }
 ]
 
 const mockTemplate = Object.fromEntries(columns.map(({ key, type }) => [key, `@${type}`]))

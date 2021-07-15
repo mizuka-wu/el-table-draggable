@@ -4,6 +4,14 @@
     <div :key="key" v-for="({ key, name }) of examples">
       <h2>{{ name }}</h2>
       <component :is="key" />
+      <el-link
+        style="margin: 16px 0;"
+        type="primary"
+        :href="`https://github.com/mizuka-wu/el-table-draggable/blob/master/src/examples/${key}.vue`"
+      >
+        查看源文件
+        <i class="el-icon-view el-icon--right"></i>
+      </el-link>
       <hr />
     </div>
   </div>

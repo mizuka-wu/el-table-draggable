@@ -10,6 +10,7 @@
         ></el-table-column>
       </el-table>
     </ElTableDraggable>
+    <ListViewer :value="list" />
   </div>
 </template>
 
