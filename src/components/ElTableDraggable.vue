@@ -1,14 +1,17 @@
 <template>
-  <component
-    :is="tag"
-    ref="wrapper"
-  >
+  <component :is="tag" ref="wrapper">
     <slot></slot>
   </component>
 </template>
 
 <script>
 import Sortable from "sortablejs";
+
+// eslint-disable-next-line no-unused-vars
+function setExpandedRow(table) {
+  const rows = table.querySelectorAll(".el-table__row.expanded+tr[class='']")
+  console.log(rows)
+}
 
 export default {
   name: "ElementUiElTableDraggable",
@@ -22,13 +25,14 @@ export default {
     return {
       // eslint-disable-next-line vue/no-reserved-keys
       _sortable: null,
-      table: null
+      table: null,
+      expandedRows: []
     }
   },
   methods: {
     init() {
       const context = window.__ElTableDraggableContext
-      if (!this.$children[0].$el) {
+      if (!this.$children[0] && !this.$children[0].$el) {
         throw new Error("添加slot")
       }
 
@@ -46,6 +50,7 @@ export default {
         filter: ".el-table__empty-block",
         ...this.$attrs,
         // 绑定事件
+        draggable: ".el-table__row",
         ...Object.keys(this.$listeners).reduce((events, key) => {
           const handler = this.$listeners[key]
           // 首字母大写
@@ -57,11 +62,21 @@ export default {
 
           return events
         }, {}),
+        onStart: (evt) => {
+          console.log(evt)
+          // const { from } = evt
+          // const rows = from.querySelectorAll(".el-table__row.expanded+tr[class='']")
+          // Array.from(rows).forEach(row => row.style.display = "none")
+          this.$emit('start', evt)
+        },
         onEnd: (evt) => {
           const { newIndex, oldIndex, to, from, pullMode } = evt
           const toList = context.get(to).data
           const fromList = context.get(from).data
           const target = fromList[oldIndex]
+
+          // const rows = from.querySelectorAll(".el-table__row.expanded+tr")
+          // // Array.from(rows).forEach(row => row.style.display = "initial")
 
           // move的情况
           if (pullMode !== 'clone') {
@@ -77,6 +92,13 @@ export default {
               const tableContext = context.get(table)
               const draggableContext = tableContext.$parent
               draggableContext.$emit("change", tableContext.data)
+
+              this.$nextTick(() => {
+                const expandedRows = tableContext.store.states.expandRows
+                if (expandedRows.length > 0) {
+                  // 重新绘制
+                }
+              })
             }
           })
 
@@ -96,6 +118,7 @@ export default {
           context.delete(this.table)
         }
         this.table = null
+        this.expandedRows = []
       }
     },
   },
