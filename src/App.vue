@@ -1,50 +1,36 @@
 <template>
   <div id="app">
-    <el-checkbox v-model="disabled">禁止拖动</el-checkbox>
-    <div
-      :key="index"
-      v-for="(data, index) of datas"
-    >
-      <h1>表{{ index }}</h1>
-      {{ data }}
-      <ElTableDraggable
-        :disabled="disabled"
-        group="table"
-      >
-        <el-table
-          :data="data"
-          row-key="a"
-        >
-          <el-table-column
-            :key="key"
-            :label="key"
-            :prop="key"
-            v-for="key of keys"
-          />
-        </el-table>
-      </ElTableDraggable>
+    <h1>Demo</h1>
+    <div :key="key" v-for="({ key, name }) of examples">
+      <h2>{{ name }}</h2>
+      <component :is="key" />
+      <hr />
     </div>
   </div>
 </template>
 
 <script>
-import ElTableDraggable from './components/ElTableDraggable.vue'
+const components = {}
+const componentNameMap = {}
+const examples = require.context('./examples', false, /\.vue$/)
+
+examples.keys().forEach(key => {
+    const componentName = key.replace('./', '').replace('.vue', '')
+    const context = examples(key)
+
+    components[componentName] = context.default
+    componentNameMap[componentName] = context.name
+})
 
 export default {
   name: 'App',
-  components: {
-    ElTableDraggable
-  },
+  components,
   data() {
     return {
-      disabled: false,
-      keys: ["a", "b", "c", "d"],
-      datas: Array.from(new Array(2)).map((_key, _index) => (Array.from(new Array(5)).map((key, index) => ({
-        a: index * (_index + 100),
-        b: index * _index + 200,
-        c: index * _index + 400,
-        d: index
-      }))))
+      examples: Object.keys(components).map((key) => ({
+        key,
+        name: componentNameMap[key]
+      }))
     }
   },
   methods: {
