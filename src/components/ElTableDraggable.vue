@@ -1,7 +1,10 @@
 <template>
-  <div ref="wrapper">
+  <component
+    :is="tag"
+    ref="wrapper"
+  >
     <slot></slot>
-  </div>
+  </component>
 </template>
 
 <script>
@@ -10,10 +13,10 @@ import Sortable from "sortablejs";
 export default {
   name: "ElementUiElTableDraggable",
   props: {
-    value: {
-      type: Array,
-      default: () => []
-    },
+    tag: {
+      type: String,
+      default: "div"
+    }
   },
   data() {
     return {
