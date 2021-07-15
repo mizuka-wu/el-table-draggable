@@ -20,7 +20,7 @@ function fixIndex(sourceIndex, context) {
   const indexOfExpandedRows = expandRows
     .map(row => data.indexOf(row))
     .map((rowIndex, index) => index + rowIndex + 1) // index 之前有几个展开了， rowIndex + 1， 不算之前已经展开的话，实际应该在的位置
-  const offset = Math.max(0, ...indexOfExpandedRows.filter(index => index < sourceIndex))
+  const offset = indexOfExpandedRows.filter(index => index < sourceIndex).length // 偏移量，也就是有几个expand的row小于当前row
 
   return sourceIndex - offset
 }
@@ -96,11 +96,20 @@ export default {
           toList.splice(newIndex, 0, target)
 
           // change事件
-          const notifyList = from === to ? [from] : [from, to]
-          notifyList.forEach(table => {
+          const affected = from === to ? [from] : [from, to]
+
+          // const expandedRows = affected.reduce((list) => {
+
+          // }, [])
+
+          affected.forEach(table => {
             if (context.has(table)) {
               const tableContext = context.get(table)
               const draggableContext = tableContext.$parent
+
+              // 修正expand，也就是将expand的部分全部重新绘制一遍
+
+
               draggableContext.$emit("change", tableContext.data)
 
               this.$nextTick(() => {
