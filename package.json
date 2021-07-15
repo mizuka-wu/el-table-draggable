@@ -16,8 +16,14 @@
     "lint": "vue-cli-service lint"
   },
   "main": "dist/ElTableDraggable.umd.js",
+  "vetur": {
+    "tags": "vetur/tags.json",
+    "attributes": "vetur/attributes.json"
+  },
   "files": [
-    "dist/"
+    "src/components",
+    "vetur",
+    "dist"
   ],
   "dependencies": {
     "core-js": "^3.6.5",

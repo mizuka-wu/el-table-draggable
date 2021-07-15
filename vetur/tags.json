@@ -1,0 +1,42 @@
+{
+    "el-table-draggable": {
+        "attributes": [
+            "group",
+            "sort",
+            "delay",
+            "touchStartThreshold",
+            "disabled",
+            "store",
+            "animation",
+            "easing",
+            "handle",
+            "filter",
+            "preventOnFilter",
+            "draggable",
+            "ghostClass",
+            "chosenClass",
+            "dragClass",
+            "dataIdAttr",
+            "swapThreshold",
+            "invertSwap",
+            "invertedSwapThreshold",
+            "direction",
+            "forceFallback",
+            "fallbackClass",
+            "fallbackOnBody",
+            "fallbackTolerance",
+            "scroll",
+            "scrollFn",
+            "scrollSensitivity",
+            "scrollSpeed",
+            "bubbleScroll",
+            "dragoverBubble",
+            "removeCloneOnHide",
+            "emptyInsertThreshold"
+        ],
+        "subtags": [
+            "el-table"
+        ],
+        "description": "让el-table可拖动"
+    }
+}

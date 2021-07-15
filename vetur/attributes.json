@@ -1,0 +1,5 @@
+{
+    "group": {
+        "description": "// or { name: \"...\", pull: [true, false, 'clone', array], put: [true, false, array] }"
+    }
+}
