@@ -28,8 +28,10 @@
   ],
   "dependencies": {
     "core-js": "^3.6.5",
+    "highlight.js": "^9.18.5",
     "sortablejs": "^1.14.0",
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "vue-highlight-component": "^1.0.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

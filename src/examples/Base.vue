@@ -11,6 +11,7 @@
       </el-table>
     </ElTableDraggable>
     <ListViewer :value="list" />
+    <CodeViewer language="html" :code="code"></CodeViewer>
   </div>
 </template>
 
@@ -21,7 +22,11 @@ export default {
     data() {
         return {
             columns,
-            list: createData()
+            list: createData(),
+            code: `<ElTableDraggable>
+    <el-table row-key="必填" :data="list">
+    </el-table>
+</ElTableDraggable>`
         }
     }
 }
