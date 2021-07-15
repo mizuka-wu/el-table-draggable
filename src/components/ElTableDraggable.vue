@@ -7,10 +7,22 @@
 <script>
 import Sortable from "sortablejs";
 
-// eslint-disable-next-line no-unused-vars
-function setExpandedRow(table) {
-  const rows = table.querySelectorAll(".el-table__row.expanded+tr[class='']")
-  console.log(rows)
+/**
+ * 修正index
+ * 具体行为为获取当前是打开的expand的具体位置
+ * 计算出每个expand容器tr的位置
+ * 取最大的那个位置
+ */
+function fixIndex(sourceIndex, context) {
+  const { expandRows } = context.store.states
+  const { data } = context
+
+  const indexOfExpandedRows = expandRows
+    .map(row => data.indexOf(row))
+    .map((rowIndex, index) => index + rowIndex + 1) // index 之前有几个展开了， rowIndex + 1， 不算之前已经展开的话，实际应该在的位置
+  const offset = Math.max(0, ...indexOfExpandedRows.filter(index => index < sourceIndex))
+
+  return sourceIndex - offset
 }
 
 export default {
@@ -62,21 +74,19 @@ export default {
 
           return events
         }, {}),
-        onStart: (evt) => {
-          console.log(evt)
-          // const { from } = evt
-          // const rows = from.querySelectorAll(".el-table__row.expanded+tr[class='']")
-          // Array.from(rows).forEach(row => row.style.display = "none")
-          this.$emit('start', evt)
-        },
         onEnd: (evt) => {
-          const { newIndex, oldIndex, to, from, pullMode } = evt
-          const toList = context.get(to).data
-          const fromList = context.get(from).data
-          const target = fromList[oldIndex]
+          const { to, from, pullMode } = evt
+          const toContext = context.get(to)
+          const toList = toContext.data
+          const fromContext = context.get(from)
+          const fromList = fromContext.data
+          let { newIndex, oldIndex, } = evt
 
-          // const rows = from.querySelectorAll(".el-table__row.expanded+tr")
-          // // Array.from(rows).forEach(row => row.style.display = "initial")
+          /** expand模式下需要进行修正 */
+          oldIndex = fixIndex(oldIndex, fromContext)
+          newIndex = fixIndex(newIndex, toContext)
+
+          const target = fromList[oldIndex]
 
           // move的情况
           if (pullMode !== 'clone') {
