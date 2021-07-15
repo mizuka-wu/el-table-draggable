@@ -60,6 +60,8 @@ body,
 }
 
 #app {
+  max-width: 1080px;
   padding: 8px;
+  margin: auto;
 }
 </style>
