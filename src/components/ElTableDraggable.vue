@@ -64,6 +64,16 @@ export default {
           }
 
           toList.splice(newIndex, 0, target)
+
+          // change事件
+          const notifyList = from === to ? [from] : [from, to]
+          notifyList.forEach(table => {
+            if (context.has(table)) {
+              const tableContext = context.get(table)
+              const draggableContext = tableContext.$parent
+              draggableContext.$emit("change", tableContext.data)
+            }
+          })
         },
       });
     },
