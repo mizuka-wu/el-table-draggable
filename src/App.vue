@@ -5,7 +5,7 @@
       :key="index"
       v-for="(data, index) of datas"
     >
-      <h1>表1</h1>
+      <h1>表{{ index }}</h1>
       {{ data }}
       <ElTableDraggable
         :disabled="disabled"
