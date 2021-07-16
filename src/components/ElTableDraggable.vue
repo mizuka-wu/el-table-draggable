@@ -42,7 +42,7 @@ export default {
       // eslint-disable-next-line vue/no-reserved-keys
       _sortable: null,
       table: null,
-      movingExpandedRow: null
+      movingExpandedRowss: null
     }
   },
   methods: {
@@ -80,13 +80,13 @@ export default {
         // 开始的时候自动隐藏需要调整的
         onStart: (evt) => {
           const { item, oldIndex, from } = evt
-          console.log(oldIndex)
           if (item.className.includes("expanded")) {
+            // 正在拖拽的需要隐藏
             const expanded = item.nextSibling
-            expanded.style.display = "none"
+            expanded.parentNode.removeChild(expanded)
             const sourceContext = context.get(from)
             const index = fixIndex(oldIndex, sourceContext)
-            this.movingExpandedRow = sourceContext.data[index]
+            this.movingExpandedRows = sourceContext.data[index]
           }
           this.$emit('start', evt)
         },
@@ -120,9 +120,9 @@ export default {
               const draggableContext = tableContext.$parent
 
               // 修正expand，也就是将expand的部分全部重新绘制一遍
-              if (this.movingExpandedRow) {
+              if (this.movingExpandedRows) {
                 // 缓存需要展开的row
-                const row = this.movingExpandedRow
+                const row = this.movingExpandedRows
                 tableContext.toggleRowExpansion(row, false)
                 this.$nextTick(() => {
                   tableContext.toggleRowExpansion(row, true)
@@ -132,7 +132,7 @@ export default {
               draggableContext.$emit("change", tableContext.data)
             }
           })
-          this.movingExpandedRow = null
+          this.movingExpandedRows = null
 
           // 原生事件通知
           this.$emit('end', evt)
@@ -150,7 +150,7 @@ export default {
           context.delete(this.table)
         }
         this.table = null
-        this.movingExpandedRow = null
+        this.movingExpandedRows = null
       }
     },
   },
