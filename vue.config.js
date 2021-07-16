@@ -4,5 +4,8 @@ module.exports = {
       output: {
         libraryExport: 'default'
       }
+    },
+    css: {
+      extract: false
     }
   }
