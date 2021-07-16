@@ -1,5 +1,5 @@
 <template>
-  <pre style="background: #eaeaea">{{ displayed }}</pre>
+  <pre class="code">{{ displayed }}</pre>
 </template>
 
 <script>
@@ -17,3 +17,13 @@ export default {
     }
 }
 </script>
+<style scoped>
+.code {
+  overflow: auto;
+  width: 100%;
+  max-height: 300px;
+  background: #eaeaea;
+  box-sizing: border-box;
+  padding: 8px;
+}
+</style>
