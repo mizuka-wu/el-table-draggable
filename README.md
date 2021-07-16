@@ -34,7 +34,7 @@ export default {
 ```html
 <template>
     <el-table-draggable>
-        <el-table></el-table>
+        <el-table row-key></el-table>
     </el-table-draggable>
 </template>
 ```
