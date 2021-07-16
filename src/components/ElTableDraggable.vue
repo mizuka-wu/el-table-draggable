@@ -43,6 +43,7 @@ export default {
       _sortable: null,
       table: null,
       movingExpandedRowss: null
+      
     }
   },
   methods: {
@@ -61,6 +62,14 @@ export default {
       const elTableContext = this.$children[0]
       context.set(this.table, elTableContext)
 
+      const needFallbckTrs = [] // 需要重置样式的tr，用于拖拽的样式
+      const fallbackTr = function() {
+        needFallbckTrs.forEach(tr => {
+          tr.style.transform = ""
+        })
+        needFallbckTrs.splice(0)
+      }
+
       this._sortable = Sortable.create(this.table, {
         // 绑定sortable的option
         ...this.$attrs,
@@ -77,20 +86,49 @@ export default {
 
           return events
         }, {}),
-        // 开始的时候自动隐藏需要调整的
+        /**
+         * 展开列需要隐藏处理
+         */
         onStart: (evt) => {
           const { item, oldIndex, from } = evt
+          // 
           if (item.className.includes("expanded")) {
-            // 正在拖拽的需要隐藏
-            const expanded = item.nextSibling
-            expanded.parentNode.removeChild(expanded)
+            const expandedTr = item.nextSibling
+            expandedTr.parentNode.removeChild(expandedTr)
             const sourceContext = context.get(from)
             const index = fixIndex(oldIndex, sourceContext)
             this.movingExpandedRows = sourceContext.data[index]
           }
           this.$emit('start', evt)
         },
+        /**
+         * 展开列需要自动调整位置
+         */
+        onMove: (evt, originalEvent) => {
+          /**
+           * 如果该列是展开列，需要调整样式
+           */
+          fallbackTr()
+          const { related } = evt
+          if (related.className.includes("expanded")) {
+            needFallbckTrs.splice(0)
+            // 预防万一，判断一下展开行下一行是不是真实的已展开的行(没有className)
+            const expandedTr = related.nextSibling.className === '' && related.nextSibling
+            if (expandedTr) {
+              // 等待确实交换之后，再进行位置调整
+              this.$nextTick(() => {
+                const ghostTr = expandedTr.previousSibling
+                ghostTr.style.transform = `translateY(${expandedTr.clientHeight}px)`
+                expandedTr.style.transform = `translateY(-${ghostTr.clientHeight}px)`
+                needFallbckTrs.push(ghostTr, expandedTr)
+              })
+            }
+          }
+
+          this.$emit('move', evt, originalEvent)
+        },
         onEnd: (evt) => {
+          fallbackTr()
           const { to, from, pullMode } = evt
           const toContext = context.get(to)
           const toList = toContext.data
