@@ -10,6 +10,15 @@
     "type": "git",
     "url": "git@github.com:mizuka-wu/el-table-draggable.git"
   },
+  "keywords": [
+    "element-ui",
+    "vue",
+    "vue2",
+    "sortablejs",
+    "sortable.js",
+    "table",
+    "draggable"
+  ],
   "scripts": {
     "serve": "vue-cli-service serve",
     "build:demo": "vue-cli-service build --dest examples",
