@@ -10,6 +10,7 @@
 <script>
 /* eslint-disable no-unused-vars */
 import Sortable from "sortablejs";
+import getUa from '../utils/ua'
 
 const EMPTY_FIX_CSS = "el-table-draggable__empty-table"
 
@@ -56,6 +57,7 @@ export default {
       }
 
       this.destroy()
+      const ua = getUa()
 
       this.table = this.$children[0].$el.querySelector(
         ".el-table__body-wrapper tbody"
@@ -73,10 +75,10 @@ export default {
       }
 
       this._sortable = Sortable.create(this.table, {
+        delay: ua.isPc ? 0 : 300,
         // 绑定sortable的option
         ...this.$attrs,
-        draggable: [".el-table__empty-block", ".el-table__row"],
-        // filter() {},
+        draggable: '.el-table__row',
         // 绑定事件
         ...Object.keys(this.$listeners).reduce((events, key) => {
           const handler = this.$listeners[key]
