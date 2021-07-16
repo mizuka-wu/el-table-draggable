@@ -1,10 +1,14 @@
 <template>
-  <component :is="tag" ref="wrapper">
+  <component
+    :is="tag"
+    ref="wrapper"
+  >
     <slot></slot>
   </component>
 </template>
 
 <script>
+/* eslint-disable no-unused-vars */
 import Sortable from "sortablejs";
 
 /**
@@ -38,7 +42,7 @@ export default {
       // eslint-disable-next-line vue/no-reserved-keys
       _sortable: null,
       table: null,
-      expandedRows: []
+      movingExpandedRow: null
     }
   },
   methods: {
@@ -59,10 +63,9 @@ export default {
 
       this._sortable = Sortable.create(this.table, {
         // 绑定sortable的option
-        filter: ".el-table__empty-block",
         ...this.$attrs,
-        // 绑定事件
         draggable: ".el-table__row",
+        // 绑定事件
         ...Object.keys(this.$listeners).reduce((events, key) => {
           const handler = this.$listeners[key]
           // 首字母大写
@@ -74,6 +77,19 @@ export default {
 
           return events
         }, {}),
+        // 开始的时候自动隐藏需要调整的
+        onStart: (evt) => {
+          const { item, oldIndex, from } = evt
+          console.log(oldIndex)
+          if (item.className.includes("expanded")) {
+            const expanded = item.nextSibling
+            expanded.style.display = "none"
+            const sourceContext = context.get(from)
+            const index = fixIndex(oldIndex, sourceContext)
+            this.movingExpandedRow = sourceContext.data[index]
+          }
+          this.$emit('start', evt)
+        },
         onEnd: (evt) => {
           const { to, from, pullMode } = evt
           const toContext = context.get(to)
@@ -98,28 +114,25 @@ export default {
           // change事件
           const affected = from === to ? [from] : [from, to]
 
-          // const expandedRows = affected.reduce((list) => {
-
-          // }, [])
-
           affected.forEach(table => {
             if (context.has(table)) {
               const tableContext = context.get(table)
               const draggableContext = tableContext.$parent
 
               // 修正expand，也就是将expand的部分全部重新绘制一遍
-
+              if (this.movingExpandedRow) {
+                // 缓存需要展开的row
+                const row = this.movingExpandedRow
+                tableContext.toggleRowExpansion(row, false)
+                this.$nextTick(() => {
+                  tableContext.toggleRowExpansion(row, true)
+                })
+              }
 
               draggableContext.$emit("change", tableContext.data)
-
-              this.$nextTick(() => {
-                const expandedRows = tableContext.store.states.expandRows
-                if (expandedRows.length > 0) {
-                  // 重新绘制
-                }
-              })
             }
           })
+          this.movingExpandedRow = null
 
           // 原生事件通知
           this.$emit('end', evt)
@@ -137,7 +150,7 @@ export default {
           context.delete(this.table)
         }
         this.table = null
-        this.expandedRows = []
+        this.movingExpandedRow = null
       }
     },
   },
