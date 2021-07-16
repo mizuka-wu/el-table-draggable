@@ -11,6 +11,8 @@
 /* eslint-disable no-unused-vars */
 import Sortable from "sortablejs";
 
+const EMPTY_FIX_CSS = "el-table-draggable__empty-table"
+
 /**
  * 修正index
  * 具体行为为获取当前是打开的expand的具体位置
@@ -73,7 +75,8 @@ export default {
       this._sortable = Sortable.create(this.table, {
         // 绑定sortable的option
         ...this.$attrs,
-        draggable: ".el-table__row",
+        draggable: [".el-table__empty-block", ".el-table__row"],
+        // filter() {},
         // 绑定事件
         ...Object.keys(this.$listeners).reduce((events, key) => {
           const handler = this.$listeners[key]
@@ -88,10 +91,18 @@ export default {
         }, {}),
         /**
          * 展开列需要隐藏处理
+         * 空列表需要修改样式
          */
         onStart: (evt) => {
+          // 修改空列表
+          const emptyList = document.querySelectorAll(".el-table__body-wrapper .el-table__empty-block")
+          emptyList.forEach(emptyTr => {
+            const tableEl = emptyTr.parentNode
+            tableEl.classList.add(EMPTY_FIX_CSS)
+          })
+
+          // 修改展开列
           const { item, oldIndex, from } = evt
-          // 
           if (item.className.includes("expanded")) {
             const expandedTr = item.nextSibling
             expandedTr.parentNode.removeChild(expandedTr)
@@ -128,7 +139,13 @@ export default {
           this.$emit('move', evt, originalEvent)
         },
         onEnd: (evt) => {
-          fallbackTr()
+          // 移除empty的css
+          Array.from(document.querySelectorAll(`.${EMPTY_FIX_CSS}`))
+          .forEach(el => {
+            el.classList.remove(EMPTY_FIX_CSS)
+          })
+
+          fallbackTr() // 清除expand的tr变化
           const { to, from, pullMode } = evt
           const toContext = context.get(to)
           const toList = toContext.data
@@ -217,3 +234,18 @@ export default {
   },
 };
 </script>
+<style>
+.el-table-draggable__empty-table table {
+  width: 100%;
+  min-height: 100%;
+  position: absolute;
+  z-index: 2;
+}
+
+.el-table-draggable__empty-table tbody {
+  position: absolute;
+  overflow: visible;
+  width: 100%;
+  min-height: 100%;
+}
+</style>
