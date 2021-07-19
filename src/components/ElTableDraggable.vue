@@ -181,9 +181,11 @@ export default {
               if (this.movingExpandedRows) {
                 // 缓存需要展开的row
                 const row = this.movingExpandedRows
-                tableContext.toggleRowExpansion(row, false)
                 this.$nextTick(() => {
-                  tableContext.toggleRowExpansion(row, true)
+                  tableContext.toggleRowExpansion(row, false)
+                  this.$nextTick(() => {
+                    tableContext.toggleRowExpansion(row, true)
+                  })
                 })
               }
               draggableContext.$emit("input", tableContext.data)
