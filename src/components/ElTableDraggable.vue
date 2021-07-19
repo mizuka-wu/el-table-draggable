@@ -14,11 +14,13 @@ const EMPTY_FIX_CSS = "el-table-draggable__empty-table"
 const CONFIG = {
   ROW: {
     WRAPPER: ".el-table__body-wrapper tbody",
-    DRAGGABLE: ".el-table__row"
+    DRAGGABLE: ".el-table__row",
+    PROP: "data"
   },
   COLUMN: {
     WRAPPER: ".el-table__header-wrapper thead tr",
-    DRAGGABLE: "th"
+    DRAGGABLE: "th",
+    PROP: "columns"
   }
 }
 
@@ -61,6 +63,11 @@ export default {
       
     }
   },
+  computed: {
+    row({ column }) {
+      return !column
+    }
+  },
   methods: {
     init() {
       const context = window.__ElTableDraggableContext
@@ -71,13 +78,11 @@ export default {
       this.destroy()
       const ua = getUa()
 
-      const { WRAPPER, DRAGGABLE } = CONFIG[this.column ? 'COLUMN' : 'ROW' ]
+      const { WRAPPER, DRAGGABLE, PROP } = CONFIG[this.column ? 'COLUMN' : 'ROW' ]
 
       this.table = this.$children[0].$el.querySelector(
         WRAPPER
       );
-
-      console.log(this.table)
 
       const elTableContext = this.$children[0]
       context.set(this.table, elTableContext)
@@ -112,22 +117,25 @@ export default {
          * 空列表需要修改样式
          */
         onStart: (evt) => {
-          // 修改空列表
-          const tableEls = document.querySelectorAll(".el-table__body-wrapper table")
-          tableEls.forEach(tableEl => {
-            if (tableEl.clientHeight === 0) {
-            tableEl.classList.add(EMPTY_FIX_CSS)
-            }
-          })
 
-          // 修改展开列
-          const { item, oldIndex, from } = evt
-          if (item.className.includes("expanded")) {
-            const expandedTr = item.nextSibling
-            expandedTr.parentNode.removeChild(expandedTr)
-            const sourceContext = context.get(from)
-            const index = fixIndex(oldIndex, sourceContext)
-            this.movingExpandedRows = sourceContext.data[index]
+          if (this.row) {
+            // 修改空列表
+            const tableEls = document.querySelectorAll(".el-table__body-wrapper table")
+            tableEls.forEach(tableEl => {
+              if (tableEl.clientHeight === 0) {
+              tableEl.classList.add(EMPTY_FIX_CSS)
+              }
+            })
+
+            // 修改展开列
+            const { item, oldIndex, from } = evt
+            if (item.className.includes("expanded")) {
+              const expandedTr = item.nextSibling
+              expandedTr.parentNode.removeChild(expandedTr)
+              const sourceContext = context.get(from)
+              const index = fixIndex(oldIndex, sourceContext)
+              this.movingExpandedRows = sourceContext.data[index]
+            }
           }
           this.$emit('start', evt)
         },
@@ -167,14 +175,16 @@ export default {
           fallbackTr() // 清除expand的tr变化
           const { to, from, pullMode } = evt
           const toContext = context.get(to)
-          const toList = toContext.data
+          const toList = toContext[PROP]
           const fromContext = context.get(from)
-          const fromList = fromContext.data
+          const fromList = fromContext[PROP]
           let { newIndex, oldIndex, } = evt
 
-          /** expand模式下需要进行修正 */
-          oldIndex = fixIndex(oldIndex, fromContext)
-          newIndex = fixIndex(newIndex, toContext)
+          if (this.row) {
+            /** expand模式下需要进行修正 */
+            oldIndex = fixIndex(oldIndex, fromContext)
+            newIndex = fixIndex(newIndex, toContext)
+          }
 
           const target = fromList[oldIndex]
 
