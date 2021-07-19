@@ -1,6 +1,6 @@
 <template>
   <div>
-    <ElTableDraggable v-on="$listeners" column>
+    <ElTableDraggable v-on="$listeners" column @input="columns">
       <el-table :data="list" row-key="id">
         <el-table-column
           :key="column.key"
@@ -10,7 +10,7 @@
         ></el-table-column>
       </el-table>
     </ElTableDraggable>
-    <ListViewer :value="list" />
+    <ListViewer :value="columns" />
     <CodeViewer :code="code" language="html"></CodeViewer>
   </div>
 </template>

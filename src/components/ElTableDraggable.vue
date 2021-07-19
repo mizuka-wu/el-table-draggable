@@ -42,6 +42,16 @@ function fixIndex(sourceIndex, context) {
   return sourceIndex - offset
 }
 
+function exchange(oldIndex, fromList, newIndex, toList, pullMode) {
+  // 核心交换
+  const target = fromList[oldIndex]
+  // move的情况
+  if (pullMode !== 'clone') {
+    fromList.splice(oldIndex, 1)
+  }
+  toList.splice(newIndex, 0, target)
+}
+
 export default {
   name: "ElementUiElTableDraggable",
   props: {
@@ -186,14 +196,8 @@ export default {
             newIndex = fixIndex(newIndex, toContext)
           }
 
-          const target = fromList[oldIndex]
-
-          // move的情况
-          if (pullMode !== 'clone') {
-            fromList.splice(oldIndex, 1)
-          }
-
-          toList.splice(newIndex, 0, target)
+          // 交换位置
+          exchange(oldIndex, fromList, newIndex, toList, pullMode)
 
           // change事件
           const affected = from === to ? [from] : [from, to]
@@ -214,7 +218,13 @@ export default {
                   })
                 })
               }
-              draggableContext.$emit("input", tableContext.data)
+              if (this.row) {
+                const data = tableContext[PROP]
+                draggableContext.$emit("input", data)
+              } else {
+                const columns = this.value ? this.value : this.tableContext[PROP].map(({ property }) => ({property}))
+                draggableContext.$emit("input", columns)
+              }
             }
           })
           this.movingExpandedRows = null
