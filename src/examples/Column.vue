@@ -23,7 +23,7 @@ export default {
         return {
             columns,
             list: createData(),
-            code: `<ElTableDraggable>
+            code: `<ElTableDraggable column>
     <el-table row-key="必填" :data="list">
     </el-table>
 </ElTableDraggable>`
