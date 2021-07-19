@@ -62,6 +62,9 @@ export default {
     column: {
       type: Boolean,
       default: false
+    },
+    value: {
+      type: Array,
     }
   },
   data() {
@@ -199,6 +202,15 @@ export default {
           // 交换位置
           exchange(oldIndex, fromList, newIndex, toList, pullMode)
 
+          // 列模式将传入的value也尝试交换一下
+          if (this.column) {
+            const fromValue = fromContext.$parent.value || []
+            const toValue = toContext.$parent.value || []
+            if (fromValue.length && toValue.length) {
+              exchange(oldIndex, fromValue, newIndex, toValue, pullMode)
+            }
+          }
+
           // change事件
           const affected = from === to ? [from] : [from, to]
 
@@ -222,7 +234,7 @@ export default {
                 const data = tableContext[PROP]
                 draggableContext.$emit("input", data)
               } else {
-                const columns = this.value ? this.value : this.tableContext[PROP].map(({ property }) => ({property}))
+                const columns = tableContext.value ? tableContext.value : tableContext[PROP].map(({ property }) => ({property}))
                 draggableContext.$emit("input", columns)
               }
             }

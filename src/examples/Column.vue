@@ -1,6 +1,6 @@
 <template>
   <div>
-    <ElTableDraggable v-on="$listeners" column @input="columns">
+    <ElTableDraggable v-on="$listeners" column v-model="columns">
       <el-table :data="list" row-key="id">
         <el-table-column
           :key="column.key"
