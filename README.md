@@ -62,6 +62,14 @@ export default {
 
 内部table的数据有因为拖动造成的顺序，增减时进行通知
 
+0.5增加
+
+回调为当前所有行数据
+
+0.6新增
+
+列模式下，如果有`value`,返回`value`,否则返回当前列属性列表（property）
+
 #### 其他
 
 差不多支持所有[sortablejs的option](https://github.com/SortableJS/Sortable#options)里面那些`on`开头的事件，绑定事件的时候请去掉`on` 例如`onSort => @sort`
