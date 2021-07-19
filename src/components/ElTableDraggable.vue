@@ -1,8 +1,5 @@
 <template>
-  <component
-    :is="tag"
-    ref="wrapper"
-  >
+  <component :is="tag" ref="wrapper">
     <slot></slot>
   </component>
 </template>
@@ -13,6 +10,17 @@ import Sortable from "sortablejs";
 import getUa from '../utils/ua'
 
 const EMPTY_FIX_CSS = "el-table-draggable__empty-table"
+
+const CONFIG = {
+  ROW: {
+    WRAPPER: ".el-table__body-wrapper tbody",
+    DRAGGABLE: ".el-table__row"
+  },
+  COLUMN: {
+    WRAPPER: ".el-table__header-wrapper thead tr",
+    DRAGGABLE: "th"
+  }
+}
 
 /**
  * 修正index
@@ -38,6 +46,10 @@ export default {
     tag: {
       type: String,
       default: "div"
+    },
+    column: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -59,9 +71,13 @@ export default {
       this.destroy()
       const ua = getUa()
 
+      const { WRAPPER, DRAGGABLE } = CONFIG[this.column ? 'COLUMN' : 'ROW' ]
+
       this.table = this.$children[0].$el.querySelector(
-        ".el-table__body-wrapper tbody"
+        WRAPPER
       );
+
+      console.log(this.table)
 
       const elTableContext = this.$children[0]
       context.set(this.table, elTableContext)
@@ -78,7 +94,7 @@ export default {
         delay: ua.isPc ? 0 : 300,
         // 绑定sortable的option
         ...this.$attrs,
-        draggable: '.el-table__row',
+        draggable: DRAGGABLE,
         // 绑定事件
         ...Object.keys(this.$listeners).reduce((events, key) => {
           const handler = this.$listeners[key]
@@ -225,6 +241,9 @@ export default {
           })
         }
       }
+    },
+    row() {
+      this.init()
     }
   },
   mounted() {
