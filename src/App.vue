@@ -1,25 +1,23 @@
 <template>
   <div id="app">
     <h1>Demo</h1>
-    <div
-      :key="key"
-      v-for="({ key, name }) of examples"
-    >
-      <h2>{{ name }}</h2>
-      <component
-        :is="key"
-        @change="change"
-      />
-      <el-link
-        :href="`https://github.com/mizuka-wu/el-table-draggable/blob/master/src/examples/${key}.vue`"
-        style="margin: 16px 0;"
-        type="primary"
-      >
-        查看源文件
-        <i class="el-icon-view el-icon--right"></i>
-      </el-link>
-      <hr />
-    </div>
+    <el-tabs :value="demo">
+      <el-tab-pane :key="key" v-for="({ key, name }) of examples" :label="name" :name="key">
+        <div>
+          <h2>{{ name }}</h2>
+          <component :is="key" @change="change" />
+          <el-link
+            :href="`https://github.com/mizuka-wu/el-table-draggable/blob/master/src/examples/${key}.vue`"
+            style="margin: 16px 0;"
+            type="primary"
+          >
+            查看源文件
+            <i class="el-icon-view el-icon--right"></i>
+          </el-link>
+          <hr />
+        </div>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
@@ -40,11 +38,13 @@ export default {
   name: 'App',
   components,
   data() {
-    return {
-      examples: Object.keys(components).map((key) => ({
+    const examples = Object.keys(components).map((key) => ({
         key,
         name: componentNameMap[key]
       }))
+    return {
+      examples,
+      demo: examples[0].key
     }
   },
   methods: {
