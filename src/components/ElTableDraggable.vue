@@ -185,8 +185,7 @@ export default {
                   tableContext.toggleRowExpansion(row, true)
                 })
               }
-
-              draggableContext.$emit("change", tableContext.data)
+              draggableContext.$emit("input", tableContext.data)
             }
           })
           this.movingExpandedRows = null

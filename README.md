@@ -48,7 +48,7 @@ export default {
 
 ### 事件
 
-#### change
+#### input
 内部table的数据有因为拖动造成的顺序，增减时进行通知
 
 #### 其他

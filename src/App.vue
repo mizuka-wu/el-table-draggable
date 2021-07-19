@@ -1,13 +1,19 @@
 <template>
   <div id="app">
     <h1>Demo</h1>
-    <div :key="key" v-for="({ key, name }) of examples">
+    <div
+      :key="key"
+      v-for="({ key, name }) of examples"
+    >
       <h2>{{ name }}</h2>
-      <component :is="key" />
+      <component
+        :is="key"
+        @change="change"
+      />
       <el-link
+        :href="`https://github.com/mizuka-wu/el-table-draggable/blob/master/src/examples/${key}.vue`"
         style="margin: 16px 0;"
         type="primary"
-        :href="`https://github.com/mizuka-wu/el-table-draggable/blob/master/src/examples/${key}.vue`"
       >
         查看源文件
         <i class="el-icon-view el-icon--right"></i>
@@ -43,6 +49,9 @@ export default {
   },
   methods: {
     onChoose(e) {
+      console.log(e)
+    },
+    change(e) {
       console.log(e)
     }
   }

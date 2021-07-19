@@ -1,6 +1,9 @@
 <template>
   <div>
-    <ElTableDraggable group="multiTableNestingMix">
+    <ElTableDraggable
+      group="multiTableNestingMix"
+      v-on="$listeners"
+    >
       <el-table
         :data="list"
         row-key="id"
@@ -10,7 +13,10 @@
           type="expand"
         >
           <template slot-scope="{row}">
-            <ElTableDraggable group="multiTableNestingMix">
+            <ElTableDraggable
+              group="multiTableNestingMix"
+              v-on="$listeners"
+            >
               <el-table
                 :data="row.subList"
                 row-key="id"

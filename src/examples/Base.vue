@@ -1,17 +1,23 @@
 <template>
   <div>
-    <ElTableDraggable>
-      <el-table row-key="id" :data="list">
+    <ElTableDraggable v-on="$listeners">
+      <el-table
+        :data="list"
+        row-key="id"
+      >
         <el-table-column
-          :label="column.key"
           :key="column.key"
+          :label="column.key"
           :prop="column.key"
           v-for="column of columns"
         ></el-table-column>
       </el-table>
     </ElTableDraggable>
     <ListViewer :value="list" />
-    <CodeViewer language="html" :code="code"></CodeViewer>
+    <CodeViewer
+      :code="code"
+      language="html"
+    ></CodeViewer>
   </div>
 </template>
 

@@ -6,7 +6,10 @@
         :span="24/lists.length"
         v-for="(list, index) of lists"
       >
-        <ElTableDraggable group="multiTableMain">
+        <ElTableDraggable
+          group="multiTableMain"
+          v-on="$listeners"
+        >
           <el-table
             :data="list"
             row-key="id"
