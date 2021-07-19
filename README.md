@@ -5,6 +5,7 @@
 [demo请查看](https://www.mizuka.top/el-table-draggable/)
 
 ## 特性
+
 - 支持几乎所有`sortablejs`的配置
 - 支持多个表格之间互相拖动
 - 代码提示
@@ -18,6 +19,7 @@ yarn add el-table-draggable
 
 npm i -S el-table-draggable
 ```
+
 ## 使用
 
 ```js
@@ -31,6 +33,7 @@ export default {
 ```
 
 ### template
+
 ```html
 <template>
     <el-table-draggable>
@@ -40,22 +43,30 @@ export default {
 ```
 
 ### props
+
 #### tag
+
 包裹的组件，默认为div
 
+#### column
+
+启用列拖拽（试验性功能）
+
 #### 其他
+
 差不多支持所有[sortablejs的option](https://github.com/SortableJS/Sortable#options)
 
 ### 事件
 
 #### input
+
 内部table的数据有因为拖动造成的顺序，增减时进行通知
 
 #### 其他
+
 差不多支持所有[sortablejs的option](https://github.com/SortableJS/Sortable#options)里面那些`on`开头的事件，绑定事件的时候请去掉`on` 例如`onSort => @sort`
 
 ## todo
 
-- [ ] 支持列拖动  
+- [x] 支持列拖动  
 - [ ] 支持拖动展开的列的时候`ghost`显示展开的部分
-
