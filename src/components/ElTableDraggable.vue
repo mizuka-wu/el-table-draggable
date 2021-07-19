@@ -97,10 +97,11 @@ export default {
          */
         onStart: (evt) => {
           // 修改空列表
-          const emptyList = document.querySelectorAll(".el-table__body-wrapper .el-table__empty-block")
-          emptyList.forEach(emptyTr => {
-            const tableEl = emptyTr.parentNode
+          const tableEls = document.querySelectorAll(".el-table__body-wrapper table")
+          tableEls.forEach(tableEl => {
+            if (tableEl.clientHeight === 0) {
             tableEl.classList.add(EMPTY_FIX_CSS)
+            }
           })
 
           // 修改展开列
@@ -240,6 +241,7 @@ export default {
   width: 100%;
   min-height: 100%;
   position: absolute;
+  min-height: 30px;
   z-index: 2;
 }
 
