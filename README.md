@@ -9,6 +9,7 @@
 - 支持几乎所有`sortablejs`的配置
 - 支持多个表格之间互相拖动
 - 代码提示
+- 针对空行进行了处理，可以直接拖动到空的el-table内，无论你有没有显示空行的提示行，默认高度为60px，可以靠`.el-table-draggable__empty-table {min-height: px;}`来自定义
 
 ## 安装
 
