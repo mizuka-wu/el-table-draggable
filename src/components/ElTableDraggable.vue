@@ -293,12 +293,13 @@ export default {
 };
 </script>
 <style>
-.el-table-draggable__empty-table table {
+.el-table-draggable__empty-table {
   width: 100%;
   min-height: 100%;
   position: absolute;
   min-height: 30px;
   z-index: 2;
+  background: transparent;
 }
 
 .el-table-draggable__empty-table tbody {
