@@ -1,5 +1,8 @@
 <template>
-  <component :is="tag" ref="wrapper">
+  <component
+    :is="tag"
+    ref="wrapper"
+  >
     <slot></slot>
   </component>
 </template>
@@ -234,7 +237,7 @@ export default {
                 const data = tableContext[PROP]
                 draggableContext.$emit("input", data)
               } else {
-                const columns = tableContext.value ? tableContext.value : tableContext[PROP].map(({ property }) => ({property}))
+                const columns = draggableContext.value ? draggableContext.value : tableContext[PROP].map(({ property }) => ({property}))
                 draggableContext.$emit("input", columns)
               }
             }
