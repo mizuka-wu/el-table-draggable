@@ -139,7 +139,8 @@ export default {
             const tableEls = document.querySelectorAll(".el-table__body-wrapper table")
             tableEls.forEach(tableEl => {
               if (tableEl.clientHeight === 0) {
-              tableEl.classList.add(EMPTY_FIX_CSS)
+              // body-wrapper增加样式，让overflw可显示同时table有个透明区域可拖动
+              tableEl.parentNode.classList.add(EMPTY_FIX_CSS)
               }
             })
 
@@ -294,17 +295,19 @@ export default {
 </script>
 <style>
 .el-table-draggable__empty-table {
-  width: 100%;
-  min-height: 100%;
-  position: fixed;
   min-height: 60px;
+}
+
+.el-table-draggable__empty-table table {
+  width: 100%;
+  height: 100%;
+  min-height: 60px;
+  position: absolute;
   z-index: 99;
-  background: transparent;
 }
 
 .el-table-draggable__empty-table tbody {
   position: absolute;
-  overflow: visible;
   width: 100%;
   min-height: 100%;
 }
