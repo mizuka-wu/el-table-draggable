@@ -296,9 +296,9 @@ export default {
 .el-table-draggable__empty-table {
   width: 100%;
   min-height: 100%;
-  position: absolute;
-  min-height: 30px;
-  z-index: 2;
+  position: fixed;
+  min-height: 60px;
+  z-index: 99;
   background: transparent;
 }
 
