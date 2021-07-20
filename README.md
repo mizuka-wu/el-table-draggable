@@ -11,6 +11,14 @@
 - 代码提示
 - 针对空行进行了处理，可以直接拖动到空的el-table内，无论你有没有显示空行的提示行，默认高度为60px，可以靠`.el-table-draggable__empty-table {min-height: px;}`来自定义
 
+### 目前支持的特性
+* 行拖拽
+* 列拖拽
+* 设置handle
+* 设置group实现分类拖拽
+* ...其他sortable.js的配置
+* input事件，因为change事件和sortable.js的默认事件重复，改为input事件，回调为变化后的行(列)集合
+
 ## 安装
 
 ### 使用npm或者yarn
