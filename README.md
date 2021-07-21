@@ -88,3 +88,5 @@ export default {
 - [x] 支持列拖动  
 - [ ] 支持拖动展开的列的时候`ghost`显示展开的部分
 - [ ] 接入html2canvas 将展开/列部分设定到dataTransfer.setDragImage上实现拖拽优化
+
+[请我喝咖啡](https://buymeacoffee.com/mizukawu)
