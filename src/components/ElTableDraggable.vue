@@ -1,15 +1,12 @@
 <template>
-  <component
-    :is="tag"
-    ref="wrapper"
-  >
+  <component :is="tag" ref="wrapper">
     <slot></slot>
   </component>
 </template>
 
 <script>
 /* eslint-disable no-unused-vars */
-import Sortable from "sortablejs";
+import { Sortable } from "sortablejs";
 import getUa from '../utils/ua'
 
 const EMPTY_FIX_CSS = "el-table-draggable__empty-table"
@@ -68,6 +65,10 @@ export default {
     },
     value: {
       type: Array,
+    },
+    multiDrag: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -110,6 +111,10 @@ export default {
         })
         needFallbckTrs.splice(0)
       }
+
+      // if (this.multiDrag) {
+      //   Sortable.mount(new MultiDrag());
+      // }
 
       this._sortable = Sortable.create(this.table, {
         delay: ua.isPc ? 0 : 300,
