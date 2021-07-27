@@ -17,17 +17,18 @@
 
 <script>
 export const name = "列拖拽"
+export const nameEn = 'Drag Column'
 import { createData, columns } from '../utils/createTable'
 export default {
-    data() {
-        return {
-            columns,
-            list: createData(),
-            code: `<ElTableDraggable column>
+  data() {
+    return {
+      columns,
+      list: createData(),
+      code: `<ElTableDraggable column>
     <el-table row-key="必填" :data="list">
     </el-table>
 </ElTableDraggable>`
-        }
     }
+  }
 }
 </script>

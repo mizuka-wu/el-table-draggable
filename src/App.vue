@@ -27,11 +27,11 @@ const componentNameMap = {}
 const examples = require.context('./examples', false, /\.vue$/)
 
 examples.keys().forEach(key => {
-    const componentName = key.replace('./', '').replace('.vue', '')
-    const context = examples(key)
+  const componentName = key.replace('./', '').replace('.vue', '')
+  const context = examples(key)
 
-    components[componentName] = context.default
-    componentNameMap[componentName] = context.name
+  components[componentName] = context.default
+  componentNameMap[componentName] = `${context.name}(${context.nameEn})`
 })
 
 export default {
@@ -39,9 +39,9 @@ export default {
   components,
   data() {
     const examples = Object.keys(components).map((key) => ({
-        key,
-        name: componentNameMap[key]
-      }))
+      key,
+      name: componentNameMap[key]
+    }))
     return {
       examples,
       demo: examples[0].key
