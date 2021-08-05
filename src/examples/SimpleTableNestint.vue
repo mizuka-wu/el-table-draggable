@@ -37,9 +37,9 @@ export default {
   data() {
     return {
       columns,
-      list: createData(2).map((item, index) => ({
+      list: createData(3).map((item, index) => ({
         ...item,
-        subList: createData(2).map(item => ({
+        subList: createData(3).map(item => ({
           ...item,
           index: `${index}-${item.index}`
         }))
