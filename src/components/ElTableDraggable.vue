@@ -84,7 +84,7 @@ export default {
       // eslint-disable-next-line vue/no-reserved-keys
       _sortable: null,
       table: null,
-      movingExpandedRowss: null
+      movingExpandedRows: null
       
     }
   },
@@ -151,13 +151,11 @@ export default {
             })
 
             // 修改展开列
-            const { item, oldIndex, from } = evt
+            const { item } = evt
             if (item.className.includes("expanded")) {
               const expandedTr = item.nextSibling
+              this.movingExpandedRow = expandedTr
               expandedTr.parentNode.removeChild(expandedTr)
-              const sourceContext = context.get(from)
-              const index = fixIndex(oldIndex, sourceContext)
-              this.movingExpandedRows = sourceContext.data[index]
             }
           }
           this.$emit('start', evt)
@@ -199,7 +197,7 @@ export default {
           const toList = toContext[PROP]
           const fromContext = context.get(from)
           const fromList = fromContext[PROP]
-          let { newIndex, oldIndex, } = evt
+          let { newIndex, oldIndex, item} = evt
 
           if (this.row) {
             /** expand模式下需要进行修正 */
@@ -228,15 +226,17 @@ export default {
               const draggableContext = tableContext.$parent
 
               // 修正expand，也就是将expand的部分全部重新绘制一遍
-              if (this.movingExpandedRows) {
+              if (this.movingExpandedRow) {
                 // 缓存需要展开的row
-                const row = this.movingExpandedRows
-                this.$nextTick(() => {
-                  tableContext.toggleRowExpansion(row, false)
-                  this.$nextTick(() => {
-                    tableContext.toggleRowExpansion(row, true)
-                  })
-                })
+                const row = this.movingExpandedRow
+                insertAfter(row, item)
+                this.movingExpandedRow = null
+                // this.$nextTick(() => {
+                //   tableContext.toggleRowExpansion(row, false)
+                //   this.$nextTick(() => {
+                //     tableContext.toggleRowExpansion(row, true)
+                //   })
+                // })
               }
               if (this.row) {
                 const data = tableContext[PROP]
@@ -247,7 +247,7 @@ export default {
               }
             }
           })
-          this.movingExpandedRows = null
+          this.movingExpandedRow = null
 
           // 原生事件通知
           this.$emit('end', evt)
@@ -265,7 +265,7 @@ export default {
           context.delete(this.table)
         }
         this.table = null
-        this.movingExpandedRows = null
+        this.movingExpandedRow = null
       }
     },
   },
