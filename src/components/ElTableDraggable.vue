@@ -231,12 +231,6 @@ export default {
                 const row = this.movingExpandedRow
                 insertAfter(row, item)
                 this.movingExpandedRow = null
-                // this.$nextTick(() => {
-                //   tableContext.toggleRowExpansion(row, false)
-                //   this.$nextTick(() => {
-                //     tableContext.toggleRowExpansion(row, true)
-                //   })
-                // })
               }
               if (this.row) {
                 const data = tableContext[PROP]
