@@ -5,7 +5,7 @@
       <el-tab-pane :key="key" v-for="({ key, name }) of examples" :label="name" :name="key">
         <div>
           <h2>{{ name }}</h2>
-          <component :is="key" @change="change" />
+          <component :is="key" />
           <el-link
             :href="`https://github.com/mizuka-wu/el-table-draggable/blob/master/src/examples/${key}.vue`"
             style="margin: 16px 0;"
