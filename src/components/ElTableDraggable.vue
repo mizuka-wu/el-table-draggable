@@ -119,6 +119,7 @@ export default {
       this._sortable = Sortable.create(this.table, {
         delay: ua.isPc ? 0 : 300,
         // 绑定sortable的option
+        animation: 300,
         ...this.$attrs,
         draggable: DRAGGABLE,
         // 绑定事件
