@@ -8,6 +8,7 @@
 /* eslint-disable no-unused-vars */
 import { Sortable } from "sortablejs";
 import getUa from '../utils/ua'
+import { insertBefore, insertAfter } from '../utils/dom'
 
 const EMPTY_FIX_CSS = "el-table-draggable__empty-table"
 
@@ -50,14 +51,6 @@ function exchange(oldIndex, fromList, newIndex, toList, pullMode) {
     fromList.splice(oldIndex, 1)
   }
   toList.splice(newIndex, 0, target)
-}
-
-function insertAfter(newNode, referenceNode) {
-    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
-}
-
-function insertBefore(newNode, referenceNode) {
-  referenceNode.parentNode.insertBefore(newNode, referenceNode)
 }
 
 export default {
@@ -172,11 +165,12 @@ export default {
             // 预防万一，判断一下展开行下一行是不是真实的已展开的行(没有className)
             const expandedTr = related.nextSibling && related.nextSibling.className === '' && related.nextSibling
             if (expandedTr) {
+              const { animation } = this._sortable.options
               this.$nextTick(() => {
                 if (willInsertAfter) {
-                  insertAfter(dragged, expandedTr)
+                  insertAfter(dragged, expandedTr, animation)
                 } else {
-                  insertBefore(dragged, related)
+                  insertBefore(dragged, related, animation)
                 }
               })
               return false
