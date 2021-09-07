@@ -212,7 +212,7 @@
                 );
                 this.movingExpandedRows = trList.slice(
                   oldIndex + 1,
-                  nextSameLevelTrIndex
+                  nextSameLevelTrIndex === -1 ? undefined : nextSameLevelTrIndex
                 );
               }
 
