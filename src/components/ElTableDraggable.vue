@@ -34,7 +34,7 @@ const CONFIG = {
  * 计算出每个expand容器tr的位置
  * 取最大的那个位置
  */
-function fixIndex(sourceIndex, context) {
+function fixExpendIndex(sourceIndex, context) {
   const { expandRows } = context.store.states
   const { data } = context
 
@@ -44,6 +44,37 @@ function fixIndex(sourceIndex, context) {
   const offset = indexOfExpandedRows.filter(index => index < sourceIndex).length // 偏移量，也就是有几个expand的row小于当前row
 
   return sourceIndex - offset
+}
+
+/**
+ * 修正index和list
+ * 模拟出来dom结构，看每个index对应的list和原始list
+ * @todo 兼容rowKey为函数
+ */
+function fixTreeIndexAndList(sourceIndex, context) {
+  const { store, data, treeProps } = context
+  const { states } = store
+  const { treeData, rowKey } = states
+  const { children } = treeProps
+
+  // 扁平化处理
+  function flatData(list, flated = []) {
+    list.forEach((item, index) => {
+      flated.push({
+        list,
+        index
+      })
+      // treeData里有它，也就是有子节点
+      if (treeData[item[rowKey]]) {
+        const subList = item[children]
+        flatData(subList, flated)
+      }
+    })
+    return flated
+  }
+
+  const flatDom = flatData(data, [])
+  return flatDom[sourceIndex]
 }
 
 function exchange(oldIndex, fromList, newIndex, toList, pullMode) {
@@ -133,6 +164,7 @@ export default {
         /**
          * 展开列需要隐藏处理
          * 空列表需要修改样式
+         * @param { {item: Element, from: Element, oldIndex: number} } evt
          */
         onStart: (evt) => {
 
@@ -146,15 +178,26 @@ export default {
               }
             })
 
-            // 修改展开列
-            const { item } = evt
+            const { item, from, oldIndex } = evt
+            
+            // 带expanded的处理
             if (item.className.includes("expanded")) {
               const expandedTr = item.nextSibling
               this.movingExpandedRows = [expandedTr]
-              this.movingExpandedRows.forEach(tr => {
-                tr.parentNode.removeChild(tr)
-              })
             }
+
+            // 树形展开的处理
+            if (item.className.includes('--level-')) {
+              const className = Array.from(item.classList).find(item => item.includes('--level-'))
+              // 将当前index和之后index区间内的(子树)全部当作展开项处理
+              const trList = Array.from(from.children)
+              const nextSameLevelTrIndex = trList.findIndex((tr, index) => index > oldIndex && tr.classList.contains(className))
+              this.movingExpandedRows = trList.slice(oldIndex + 1, nextSameLevelTrIndex)
+            }
+
+            this.movingExpandedRows.forEach(tr => {
+              tr.parentNode.removeChild(tr)
+            })
           }
           this.$emit('start', evt)
         },
@@ -193,19 +236,35 @@ export default {
 
           const { to, from, pullMode } = evt
           const toContext = context.get(to)
-          const toList = toContext[PROP]
+          let toList = toContext[PROP]
           const fromContext = context.get(from)
-          const fromList = fromContext[PROP]
-          let { newIndex, oldIndex, item} = evt
+          let fromList = fromContext[PROP]
+          let { newIndex, oldIndex, item } = evt
 
           if (this.row) {
             /** expand模式下需要进行修正 */
-            oldIndex = fixIndex(oldIndex, fromContext)
-            newIndex = fixIndex(newIndex, toContext)
+            oldIndex = fixExpendIndex(oldIndex, fromContext)
+            newIndex = fixExpendIndex(newIndex, toContext)
+            /** tree模式下需要修正 */
+            if (item.className.includes('--level-')) {
+              const fixedFrom = fixTreeIndexAndList(oldIndex, fromContext)
+              oldIndex = fixedFrom.index
+              fromList = fixedFrom.list
+              /**
+               * @todo 修正多表方案
+               */
+              if (fromContext === toContext) {
+                newIndex = newIndex - 1
+              }
+              const fixedTo = fixTreeIndexAndList(newIndex, toContext)
+              newIndex = fixedTo.index
+              toList = fixedTo.list
+            }
           }
 
+          console.log(fromList, toList, fromList === toList)
           // 交换位置
-          exchange(oldIndex, fromList, newIndex, toList, pullMode)
+          // exchange(oldIndex, fromList, newIndex, toList, pullMode)
 
           // 列模式将传入的value也尝试交换一下
           if (this.column) {

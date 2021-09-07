@@ -29,11 +29,11 @@ export default {
   data() {
     return {
       columns,
-      list: createData().map((item, index) => ({
+      list: createData(3).map((item, index) => ({
         ...item,
-        children: createData().map(data => ({
+        children: createData(2).map(data => ({
           ...data,
-          index: `${index}-${data.index}`
+          index: `${index}-${data.index}`,
         }))
       })),
       code: `<ElTableDraggable>
