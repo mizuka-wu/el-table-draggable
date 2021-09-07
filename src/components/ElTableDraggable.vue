@@ -61,9 +61,10 @@
     const { children } = treeProps;
 
     // 扁平化处理
-    function flatData(list, flated = []) {
+    function flatData(list, level = 0, flated = []) {
       list.forEach((item, index) => {
         flated.push({
+          level,
           list,
           index,
           children: item[children],
@@ -71,20 +72,28 @@
         // treeData里有它，也就是有子节点
         if (treeData[item[rowKey]]) {
           const subList = item[children];
-          flatData(subList, flated);
+          flatData(subList, level + 1, flated);
         }
       });
       return flated;
     }
 
-    let flatDom = flatData(data, []);
+    let flatDom = flatData(data, 0, []);
 
-    // 因为拖拽的时候把子层级排除了，所以这里计算扁平化的时候也要排除
+    // 因为拖拽的时候把子层级排除了，所以这里计算扁平化的时候也要排除, 算法一致
     if (sourceIndex > -1) {
-      const target = flatDom[sourceIndex];
-      if (target.children) {
-        flatDom = flatDom.filter((item) => item.list !== target.children);
-      }
+      const sourceItem = flatDom[sourceIndex];
+      const sourceItemNextSameLevelIndex = flatDom.findIndex((tr, index) => {
+        if (index <= sourceIndex) {
+          return false;
+        }
+        const { level } = tr;
+        return level <= sourceItem.level;
+      });
+      flatDom = flatDom.filter((item, index) => {
+        return index <= sourceIndex || index > sourceItemNextSameLevelIndex;
+      });
+      console.log(flatDom);
     }
 
     return flatDom[targetIndex];
