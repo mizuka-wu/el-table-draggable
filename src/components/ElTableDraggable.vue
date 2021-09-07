@@ -25,6 +25,11 @@
     },
   };
 
+  function getLelveFromClassName(className) {
+    const level = (/--level-(\d+)/.exec(className) || [])[1];
+    return +level;
+  }
+
   /**
    * 修正index
    * 具体行为为获取当前是打开的expand的具体位置
@@ -77,7 +82,6 @@
     // 因为拖拽的时候把子层级排除了，所以这里计算扁平化的时候也要排除
     if (sourceIndex > -1) {
       const target = flatDom[sourceIndex];
-      console.log(target, target.children);
       if (target.children) {
         flatDom = flatDom.filter((item) => item.list !== target.children);
       }
@@ -199,17 +203,20 @@
                 this.movingExpandedRows = [expandedTr];
               }
 
-              // 树形展开的处理
+              // 树形展开的处理, expandedRows包含之前expanded的部分
               if (item.className.includes("--level-")) {
-                const className = Array.from(item.classList).find((item) =>
-                  item.includes("--level-")
-                );
+                const targetLevel = getLelveFromClassName(item.className);
                 // 将当前index和之后index区间内的(子树)全部当作展开项处理
                 const trList = Array.from(from.children);
-                const nextSameLevelTrIndex = trList.findIndex(
-                  (tr, index) =>
-                    index > oldIndex && tr.classList.contains(className)
-                );
+                // 之后一个同级的，如果没有则是高一级-1
+                const nextSameLevelTrIndex = trList.findIndex((tr, index) => {
+                  if (index <= oldIndex) {
+                    return false;
+                  }
+                  const level = getLelveFromClassName(tr.className);
+                  return level <= targetLevel;
+                });
+
                 this.movingExpandedRows = trList.slice(
                   oldIndex + 1,
                   nextSameLevelTrIndex === -1 ? undefined : nextSameLevelTrIndex
@@ -265,13 +272,11 @@
             const fromContext = context.get(from);
             let fromList = fromContext[PROP];
             let { newIndex, oldIndex, item } = evt;
+            console.log(oldIndex, newIndex);
 
             if (this.row) {
-              /** expand模式下需要进行修正 */
-              oldIndex = fixExpendIndex(oldIndex, fromContext);
-              newIndex = fixExpendIndex(newIndex, toContext);
-              /** tree模式下需要修正 */
               if (item.className.includes("--level-")) {
+                /** tree模式下需要修正 */
                 const fixedFrom = fixTreeIndexAndList(
                   oldIndex,
                   fromContext,
@@ -289,6 +294,10 @@
                 );
                 newIndex = fixedTo.index;
                 toList = fixedTo.list;
+              } else {
+                /** expand模式下需要进行修正 */
+                oldIndex = fixExpendIndex(oldIndex, fromContext);
+                newIndex = fixExpendIndex(newIndex, toContext);
               }
             }
             // 交换位置
