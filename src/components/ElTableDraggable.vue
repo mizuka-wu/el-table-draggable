@@ -91,7 +91,7 @@
         return level <= sourceItem.level;
       });
       flatDom = flatDom.filter((item, index) => {
-        return index <= sourceIndex || index > sourceItemNextSameLevelIndex;
+        return index <= sourceIndex || index >= sourceItemNextSameLevelIndex;
       });
       console.log(flatDom);
     }
