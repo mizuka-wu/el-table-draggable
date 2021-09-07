@@ -1,5 +1,8 @@
 <template>
-  <component :is="tag" ref="wrapper">
+  <component
+    :is="tag"
+    ref="wrapper"
+  >
     <slot></slot>
   </component>
 </template>
@@ -77,7 +80,7 @@ export default {
       // eslint-disable-next-line vue/no-reserved-keys
       _sortable: null,
       table: null,
-      movingExpandedRows: null
+      movingExpandedRows: []
       
     }
   },
@@ -147,8 +150,10 @@ export default {
             const { item } = evt
             if (item.className.includes("expanded")) {
               const expandedTr = item.nextSibling
-              this.movingExpandedRow = expandedTr
-              expandedTr.parentNode.removeChild(expandedTr)
+              this.movingExpandedRows = [expandedTr]
+              this.movingExpandedRows.forEach(tr => {
+                tr.parentNode.removeChild(tr)
+              })
             }
           }
           this.$emit('start', evt)
@@ -220,11 +225,13 @@ export default {
               const draggableContext = tableContext.$parent
 
               // 修正expand，也就是将expand的部分全部重新绘制一遍
-              if (this.movingExpandedRow) {
+              if (this.movingExpandedRows.length) {
                 // 缓存需要展开的row
-                const row = this.movingExpandedRow
-                insertAfter(row, item)
-                this.movingExpandedRow = null
+                const rows = this.movingExpandedRows
+                rows.forEach(row => {
+                  insertAfter(row, item)
+                })
+                this.movingExpandedRows = []
               }
               if (this.row) {
                 const data = tableContext[PROP]
@@ -235,7 +242,7 @@ export default {
               }
             }
           })
-          this.movingExpandedRow = null
+          this.movingExpandedRows = []
 
           // 原生事件通知
           this.$emit('end', evt)
@@ -253,7 +260,7 @@ export default {
           context.delete(this.table)
         }
         this.table = null
-        this.movingExpandedRow = null
+        this.movingExpandedRows = []
       }
     },
   },
