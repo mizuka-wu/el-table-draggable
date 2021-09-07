@@ -77,10 +77,10 @@
     // 因为拖拽的时候把子层级排除了，所以这里计算扁平化的时候也要排除
     if (sourceIndex > -1) {
       const target = flatDom[sourceIndex];
+      console.log(target, target.children);
       if (target.children) {
         flatDom = flatDom.filter((item) => item.list !== target.children);
       }
-      console.log(flatDom);
     }
 
     return flatDom[targetIndex];
