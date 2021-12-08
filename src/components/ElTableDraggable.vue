@@ -187,6 +187,9 @@
            * @param { {item: Element, from: Element, oldIndex: number} } evt
            */
           onStart: (evt) => {
+            /**
+             * 行模式，需要处理一下
+             */
             if (this.row) {
               // 修改空列表
               const tableEls = document.querySelectorAll(
@@ -230,6 +233,11 @@
               this.movingExpandedRows.forEach((tr) => {
                 tr.parentNode.removeChild(tr);
               });
+            } else {
+              /**
+               * 列模式，动画模式需要修正
+               */
+              console.log(evt)
             }
             this.$emit("start", evt);
           },
@@ -276,7 +284,6 @@
             const fromContext = context.get(from);
             let fromList = fromContext[PROP];
             let { newIndex, oldIndex, item } = evt;
-            console.log(oldIndex, newIndex);
 
             if (this.row) {
               if (item.className.includes("--level-")) {
