@@ -11,7 +11,7 @@
   /* eslint-disable no-unused-vars */
   import { Sortable } from "sortablejs";
   import getUa from "../utils/ua";
-  import { insertBefore, insertAfter } from "../utils/dom";
+  import dom from "../utils/dom";
   import { getLelveFromClassName } from '../utils/utils'
 
   const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
@@ -159,6 +159,9 @@
         context.set(this.table, elTableContext);
 
         const vm = this
+        /**
+         * @todo 迁移为单独的配置plugin把判断树/展开行/列的分为三类文件
+         */
         /** @type {import('@types/sortablejs').SortableOptions}*/
         const sortableOptions = {
           delay: ua.isPc ? 0 : 300,
@@ -266,10 +269,11 @@
            * 展开列需要自动调整位置
            */
           onMove: (evt, originalEvent) => {
-            /**
-             * 如果该列是展开列，需要调整样式
-             */
             const { related, willInsertAfter, dragged } = evt;
+
+            /**
+             * 如果该行是展开列，需要调整样式
+             */
             if (related.className.includes("expanded")) {
               // 预防万一，判断一下展开行下一行是不是真实的已展开的行(没有className)
               const expandedTr =
@@ -280,13 +284,27 @@
                 const { animation } = vm._sortable.options;
                 vm.$nextTick(() => {
                   if (willInsertAfter) {
-                    insertAfter(dragged, expandedTr, animation);
+                    dom.insertAfter(dragged, expandedTr, animation);
                   } else {
-                    insertBefore(dragged, related, animation);
+                    dom.insertBefore(dragged, related, animation);
                   }
                 });
                 return false;
               }
+            }
+
+            // 如果是列拖拽模式，需要左右两边自动交换
+            if (!vm.row) {
+              const { animation } = vm._sortable.options;
+              // 需要交换两列所有的td
+              const thList = [dragged, related]
+              const [fromTdList, toTdList] = (willInsertAfter ? thList : thList.reverse())
+                .map(th => dom.getTdListByTh(th, context))
+              fromTdList.forEach((fromTd, index) => {
+                const toTd = toTdList[index]
+                // 交换td位置
+                dom.exchange(fromTd, toTd, animation)
+              })
             }
 
             vm.$emit("move", evt, originalEvent);
@@ -357,7 +375,7 @@
                   // 缓存需要展开的row
                   const rows = vm.movingExpandedRows;
                   rows.forEach((row) => {
-                    insertAfter(row, item);
+                    dom.insertAfter(row, item);
                   });
                   vm.movingExpandedRows = [];
                 }
