@@ -92,7 +92,6 @@
       flatDom = flatDom.filter((item, index) => {
         return index <= sourceIndex || index >= sourceItemNextSameLevelIndex;
       });
-      console.log(flatDom);
     }
 
     return flatDom[targetIndex];
@@ -184,12 +183,29 @@
             return events;
           }, {}),
           setData(dataTransfer, dragEl) {
-            // 列模式需要变更
-            console.log(vm)
+            // 列模式需要变更拖拽样式
             if (!vm.row) {
-              const table = elTableContext
-              console.log(table)
-              dataTransfer.setDragImage(dragEl, 0, 0)
+              /**
+               * 在页面上创建一个当前table的wrapper，然后隐藏它，只显示那一列的部分作为拖拽对象
+               * 在下一个事件循环删除dom即可
+               */
+              const { offsetLeft, offsetWidth, offsetHeight } = dragEl
+              const tableEl = elTableContext.$el
+
+              const wrapper = document.createElement('div') // 可视区域
+              wrapper.style = `position: fixed; z-index: -1;overflow: hidden; width: ${offsetWidth}px`
+              const tableCloneWrapper = document.createElement('div') // table容器，宽度和位移
+              tableCloneWrapper.style = `position: relative; left: -${offsetLeft}px; width: ${tableEl.offsetWidth}px`
+              wrapper.appendChild(tableCloneWrapper)
+              tableCloneWrapper.appendChild(tableEl.cloneNode(true))
+
+              // 推进dom，让dataTransfer可以获取
+              document.body.appendChild(wrapper)
+              // 拖拽位置需要偏移到对应的列上
+              dataTransfer.setDragImage(wrapper, offsetLeft + offsetWidth / 2, offsetHeight / 2)
+              setTimeout(() => {
+                document.body.removeChild(wrapper)
+              })
             }
           },
           /**
