@@ -159,16 +159,17 @@
         const elTableContext = this.$children[0];
         context.set(this.table, elTableContext);
 
+        const vm = this
         /** @type {import('@types/sortablejs').SortableOptions}*/
-        const sortableOptions =         {
+        const sortableOptions = {
           delay: ua.isPc ? 0 : 300,
           // 绑定sortable的option
           animation: 300,
-          ...this.$attrs,
+          ...vm.$attrs,
           draggable: DRAGGABLE,
           // 绑定事件
-          ...Object.keys(this.$listeners).reduce((events, key) => {
-            const handler = this.$listeners[key];
+          ...Object.keys(vm.$listeners).reduce((events, key) => {
+            const handler = vm.$listeners[key];
             // 首字母大写
             const eventName = `on${key.replace(/\b(\w)(\w*)/g, function(
               $0,
@@ -182,6 +183,15 @@
 
             return events;
           }, {}),
+          setData(dataTransfer, dragEl) {
+            // 列模式需要变更
+            console.log(vm)
+            if (!vm.row) {
+              const table = elTableContext
+              console.log(table)
+              dataTransfer.setDragImage(dragEl, 0, 0)
+            }
+          },
           /**
            * 展开列需要隐藏处理
            * 空列表需要修改样式
@@ -190,7 +200,7 @@
             /**
              * 行模式，需要处理一下
              */
-            if (this.row) {
+            if (vm.row) {
               // 修改空列表
               const tableEls = document.querySelectorAll(
                 ".el-table__body-wrapper table"
@@ -207,7 +217,7 @@
               // 带expanded的处理
               if (item.className.includes("expanded")) {
                 const expandedTr = item.nextSibling;
-                this.movingExpandedRows = [expandedTr];
+                vm.movingExpandedRows = [expandedTr];
               }
 
               // 树形展开的处理, expandedRows包含之前expanded的部分
@@ -224,23 +234,17 @@
                   return level <= targetLevel;
                 });
 
-                this.movingExpandedRows = trList.slice(
+                vm.movingExpandedRows = trList.slice(
                   oldIndex + 1,
                   nextSameLevelTrIndex === -1 ? undefined : nextSameLevelTrIndex
                 );
               }
 
-              this.movingExpandedRows.forEach((tr) => {
+              vm.movingExpandedRows.forEach((tr) => {
                 tr.parentNode.removeChild(tr);
               });
-            } else {
-              /**
-               * 列模式，动画模式需要修正
-               */
-              const { clone } = evt
-              
             }
-            this.$emit("start", evt);
+            vm.$emit("start", evt);
           },
           /**
            * 展开列需要自动调整位置
@@ -257,8 +261,8 @@
                 related.nextSibling.className === "" &&
                 related.nextSibling;
               if (expandedTr) {
-                const { animation } = this._sortable.options;
-                this.$nextTick(() => {
+                const { animation } = vm._sortable.options;
+                vm.$nextTick(() => {
                   if (willInsertAfter) {
                     insertAfter(dragged, expandedTr, animation);
                   } else {
@@ -269,7 +273,7 @@
               }
             }
 
-            this.$emit("move", evt, originalEvent);
+            vm.$emit("move", evt, originalEvent);
           },
           onEnd: (evt) => {
             // 移除empty的css
@@ -286,7 +290,7 @@
             let fromList = fromContext[PROP];
             let { newIndex, oldIndex, item } = evt;
 
-            if (this.row) {
+            if (vm.row) {
               if (item.className.includes("--level-")) {
                 /** tree模式下需要修正 */
                 const fixedFrom = fixTreeIndexAndList(
@@ -316,7 +320,7 @@
             exchange(oldIndex, fromList, newIndex, toList, pullMode);
 
             // 列模式将传入的value也尝试交换一下
-            if (this.column) {
+            if (vm.column) {
               const fromValue = fromContext.$parent.value || [];
               const toValue = toContext.$parent.value || [];
               if (fromValue.length && toValue.length) {
@@ -333,15 +337,15 @@
                 const draggableContext = tableContext.$parent;
 
                 // 修正expand，也就是将expand的部分全部重新绘制一遍
-                if (this.movingExpandedRows.length) {
+                if (vm.movingExpandedRows.length) {
                   // 缓存需要展开的row
-                  const rows = this.movingExpandedRows;
+                  const rows = vm.movingExpandedRows;
                   rows.forEach((row) => {
                     insertAfter(row, item);
                   });
-                  this.movingExpandedRows = [];
+                  vm.movingExpandedRows = [];
                 }
-                if (this.row) {
+                if (vm.row) {
                   const data = tableContext[PROP];
                   draggableContext.$emit("input", data);
                 } else {
@@ -352,10 +356,10 @@
                 }
               }
             });
-            this.movingExpandedRows = [];
+            vm.movingExpandedRows = [];
 
             // 原生事件通知
-            this.$emit("end", evt);
+            vm.$emit("end", evt);
           },
         }
 
