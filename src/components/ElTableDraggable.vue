@@ -159,7 +159,8 @@
         const elTableContext = this.$children[0];
         context.set(this.table, elTableContext);
 
-        this._sortable = Sortable.create(this.table, {
+        /** @type {import('@types/sortablejs').SortableOptions}*/
+        const sortableOptions =         {
           delay: ua.isPc ? 0 : 300,
           // 绑定sortable的option
           animation: 300,
@@ -184,7 +185,6 @@
           /**
            * 展开列需要隐藏处理
            * 空列表需要修改样式
-           * @param { {item: Element, from: Element, oldIndex: number} } evt
            */
           onStart: (evt) => {
             /**
@@ -237,7 +237,8 @@
               /**
                * 列模式，动画模式需要修正
                */
-              console.log(evt)
+              const { clone } = evt
+              
             }
             this.$emit("start", evt);
           },
@@ -356,7 +357,9 @@
             // 原生事件通知
             this.$emit("end", evt);
           },
-        });
+        }
+
+        this._sortable = Sortable.create(this.table, sortableOptions);
       },
       destroy() {
         if (this._sortable) {
