@@ -10,6 +10,22 @@ export const ANIMATED_CSS = "el-table-draggable-animated";
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/
 
 /**
+ * 获取原始的boundge位置
+ * @param {Element} el 
+ * @param {boolean} ignoreTranslate
+ */
+function getDomPosition(el, ignoreTranslate = true) {
+    const position = el.getBoundingClientRect().toJSON()
+    const translate = el.style.transform.translate
+    if (translate && ignoreTranslate) {
+        const { groups = { x: 0, y: 0 } } = (translateRegexp.exec(translate) || {})
+        position.x -= groups.x
+        position.y -= groups.y
+    }
+    return position
+}
+
+/**
  * 添加动画
  * @param {Element} el
  * @param {string} transform
@@ -108,21 +124,8 @@ export function exchange(prevNode, nextNode, animate = 0) {
     },
   ];
   exchangeList.forEach(({ from, to }) => {
-    const fromPostion = from.getBoundingClientRect();
-    const toPosition = to.getBoundingClientRect();
-    const fromTranslate = from.style.transform
-
-    // 计算x需要考虑之前的位置变化
-    if (fromTranslate) {
-        const groups = (translateRegexp.exec(fromTranslate) || {}).groups
-        if (!groups) {
-            console.log(fromTranslate)
-        }
-        const { x = 0, y = 0 } = groups
-        fromPostion.x -= x
-        fromPostion.y -= y
-    }
-
+    const fromPostion = getDomPosition(from, false)
+    const toPosition = getDomPosition(to, true)
     const transform = `translate(${toPosition.x - fromPostion.x}px, ${toPosition.y - fromPostion.y}px)`;
     addAnimate(from, transform, animate);
   });
