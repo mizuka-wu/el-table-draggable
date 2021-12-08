@@ -3,7 +3,11 @@ import Sortable from "sortablejs";
 const { utils } = Sortable;
 const { css } = utils;
 
+/** @type {Element[]} */
 const animatedList = [];
+
+export const ANIMATED_CSS = "el-table-draggable-animated";
+const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/
 
 /**
  * 添加动画
@@ -11,15 +15,17 @@ const animatedList = [];
  * @param {string} transform
  * @param {number} animate
  */
-function addAnimate(el, transform, animate = 0) {
+export function addAnimate(el, transform, animate = 0) {
+  el.classList.add(ANIMATED_CSS);
   css(el, "transitionProperty", `transform`);
   css(el, "transitionDuration", animate + "ms");
   css(el, "transform", transform);
   animatedList.push(el);
 }
 
-function clearAnimate() {
-  animatedList.forEach(el => {
+export function clearAnimate() {
+  animatedList.forEach((el) => {
+    el.classList.remove(ANIMATED_CSS);
     css(el, "transform", "");
     css(el, "transitionProperty", "");
     css(el, "transitionDuration", "");
@@ -52,10 +58,10 @@ export function insertBefore(newNode, referenceNode, animate = 0) {
             Math.min(indexOfNewNode, indexOfReferenceNode),
             Math.max(indexOfNewNode, indexOfReferenceNode)
           )
-          .filter(item => item !== newNode);
+          .filter((item) => item !== newNode);
         const newNodeHeight =
           offset > 0 ? -1 * newNode.offsetHeight : newNode.offsetHeight;
-        nodes.forEach(node =>
+        nodes.forEach((node) =>
           addAnimate(node, `translateY(${newNodeHeight}px)`, animate)
         );
         addAnimate(newNode, `translateY(${offset}px)`, animate);
@@ -94,23 +100,32 @@ export function exchange(prevNode, nextNode, animate = 0) {
   const exchangeList = [
     {
       from: prevNode,
-      to: nextNode
+      to: nextNode,
     },
     {
       from: nextNode,
-      to: prevNode
-    }
+      to: prevNode,
+    },
   ];
   exchangeList.forEach(({ from, to }) => {
     const fromPostion = from.getBoundingClientRect();
     const toPosition = to.getBoundingClientRect();
-    const transform = `translate(${toPosition.x - fromPostion.x}px, ${toPosition.y - fromPostion.y}px)`
+    const fromTranslate = from.style.transform
+
+    // 计算x需要考虑之前的位置变化
+    if (fromTranslate) {
+        const groups = (translateRegexp.exec(fromTranslate) || {}).groups
+        if (!groups) {
+            console.log(fromTranslate)
+        }
+        const { x = 0, y = 0 } = groups
+        fromPostion.x -= x
+        fromPostion.y -= y
+    }
+
+    const transform = `translate(${toPosition.x - fromPostion.x}px, ${toPosition.y - fromPostion.y}px)`;
     addAnimate(from, transform, animate);
   });
-
-//   setTimeout(() => {
-//     clearAnimate();
-//   }, animate);
 }
 
 /**
@@ -125,12 +140,15 @@ export function getTdListByTh(th, context) {
   /** @type {{ bodyWrapper: Element }} */
   const { bodyWrapper } = context.get(th.parentNode);
   const trList = bodyWrapper.querySelectorAll("tr");
-  return Array.from(trList).map(tr => tr.children[index]);
+  return Array.from(trList).map((tr) => tr.children[index]);
 }
 
 export default {
+  clearAnimate,
+  addAnimate,
+  ANIMATED_CSS,
   getTdListByTh,
   insertAfter,
   insertBefore,
-  exchange
+  exchange,
 };

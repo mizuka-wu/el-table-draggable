@@ -317,6 +317,9 @@
               }
             );
 
+            // 移除动画的css
+            dom.clearAnimate()
+
             const { to, from, pullMode } = evt;
             const toContext = context.get(to);
             let toList = toContext[PROP];
