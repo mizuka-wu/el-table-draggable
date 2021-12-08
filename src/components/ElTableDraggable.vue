@@ -1,5 +1,8 @@
 <template>
-  <component :is="tag" ref="wrapper">
+  <component
+    :is="tag"
+    ref="wrapper"
+  >
     <slot></slot>
   </component>
 </template>
@@ -9,6 +12,7 @@
   import { Sortable } from "sortablejs";
   import getUa from "../utils/ua";
   import { insertBefore, insertAfter } from "../utils/dom";
+  import { getLelveFromClassName } from '../utils/utils'
 
   const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
 
@@ -24,11 +28,6 @@
       PROP: "columns",
     },
   };
-
-  function getLelveFromClassName(className) {
-    const level = (/--level-(\d+)/.exec(className) || [])[1];
-    return +level;
-  }
 
   /**
    * 修正index
@@ -159,10 +158,6 @@
 
         const elTableContext = this.$children[0];
         context.set(this.table, elTableContext);
-
-        // if (this.multiDrag) {
-        //   Sortable.mount(new MultiDrag());
-        // }
 
         this._sortable = Sortable.create(this.table, {
           delay: ua.isPc ? 0 : 300,
@@ -402,21 +397,21 @@
   };
 </script>
 <style>
-  .el-table-draggable__empty-table {
-    min-height: 60px;
-  }
+.el-table-draggable__empty-table {
+  min-height: 60px;
+}
 
-  .el-table-draggable__empty-table table {
-    width: 100%;
-    height: 100%;
-    min-height: 60px;
-    position: absolute;
-    z-index: 99;
-  }
+.el-table-draggable__empty-table table {
+  width: 100%;
+  height: 100%;
+  min-height: 60px;
+  position: absolute;
+  z-index: 99;
+}
 
-  .el-table-draggable__empty-table tbody {
-    position: absolute;
-    width: 100%;
-    min-height: 100%;
-  }
+.el-table-draggable__empty-table tbody {
+  position: absolute;
+  width: 100%;
+  min-height: 100%;
+}
 </style>
