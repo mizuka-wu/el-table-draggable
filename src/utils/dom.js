@@ -8,6 +8,7 @@ const animatedSet = new Set();
 
 export const ANIMATED_CSS = "el-table-draggable-animated";
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
+const elTableColumnRegexp = /el-table_\d*_column_\d*/
 
 /**
  * 获取原始的boundge位置
@@ -148,15 +149,11 @@ export function exchange(prevNode, nextNode, animate = 0) {
  * 从th获取对应的td
  * @todo 支持跨表格获取tds
  * @param {Element} th
- * @param {*} context
- * @returns {Element[]}
+ * @returns {NodeListOf<Element>}
  */
-export function getTdListByTh(th, context) {
-  const index = Array.from(th.parentNode.childNodes).indexOf(th);
-  /** @type {{ bodyWrapper: Element }} */
-  const { bodyWrapper } = context.get(th.parentNode);
-  const trList = bodyWrapper.querySelectorAll("tr");
-  return Array.from(trList).map((tr) => tr.children[index]);
+export function getTdListByTh(th) {
+  const className = Array.from(th.classList).find(className => elTableColumnRegexp.test(className))
+  return document.querySelectorAll(`.${className}`)
 }
 
 export default {

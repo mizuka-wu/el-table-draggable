@@ -299,7 +299,7 @@
               // 需要交换两列所有的td
               const thList = [dragged, related]
               const [fromTdList, toTdList] = (willInsertAfter ? thList : thList.reverse())
-                .map(th => dom.getTdListByTh(th, context))
+                .map(th => dom.getTdListByTh(th))
 
               fromTdList.forEach((fromTd, index) => {
                 const toTd = toTdList[index]
