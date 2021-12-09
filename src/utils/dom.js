@@ -43,19 +43,48 @@ export function addAnimate(el, transform, animate = 0) {
 
 /**
  * 清除除了可忽略选项内的动画
- * @param {Element[]} ignoreElList
+ * @param {Element[]} targetList
  */
-export function clearAnimate(ignoreElList = []) {
-  for (const el of animatedSet.values()) {
-    if (ignoreElList.includes(el)) {
-      return;
-    }
+export function clearAnimate(targetList = []) {
+  const removedIteratory = targetList.length ? targetList : animatedSet.values()
+  for (const el of removedIteratory) {
     el.classList.remove(ANIMATED_CSS);
     css(el, "transform", "");
     css(el, "transitionProperty", "");
     css(el, "transitionDuration", "");
-    animatedSet.delete(el);
+    if (animatedSet.has(el)) {
+      animatedSet.delete(el);
+    }
   }
+}
+
+/**
+ * 获取移动的animate
+ * @param {Element} el
+ * @param {{x?: number, y?:number}} target
+ * @returns {string}
+ */
+ export function getTransform(el, target) {
+  const currentPostion = getDomPosition(el)
+  const originPosition = getDomPosition(el, true)
+  const { x, y } = target
+  const toPosition = {
+    x: x!==undefined ? x : currentPostion.x,
+    y: y!==undefined ? y : currentPostion.y
+  }
+  const transform = `translate(${toPosition.x -
+    originPosition.x}px, ${toPosition.y - originPosition.y}px)`
+  return transform
+}
+
+/**
+ * 移动到具体位置
+ * @param {Element} el
+ * @param {{x?: number, y?:number}} target
+ * @returns {string}
+ */
+export function translateTo(el, target) {
+
 }
 
 /**
@@ -112,24 +141,6 @@ export function insertBefore(newNode, referenceNode, animate = 0) {
 export function insertAfter(newNode, referenceNode, animate = 0) {
   const targetReferenceNode = referenceNode.nextSibling;
   insertBefore(newNode, targetReferenceNode, animate);
-}
-
-/**
- * 移动到对应位置
- * @param {Element} el
- * @param {{x?: number, y?:number}} target
- */
-export function getTransform(el, target) {
-  const currentPostion = getDomPosition(el)
-  const originPosition = getDomPosition(el, true)
-  const { x, y } = target
-  const toPosition = {
-    x: x!==undefined ? x : currentPostion.x,
-    y: y!==undefined ? y : currentPostion.y
-  }
-  const transform = `translate(${toPosition.x -
-    originPosition.x}px, ${toPosition.y - originPosition.y}px)`
-  return transform
 }
 
 /**
