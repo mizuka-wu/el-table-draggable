@@ -115,6 +115,24 @@ export function insertAfter(newNode, referenceNode, animate = 0) {
 }
 
 /**
+ * 移动到对应位置
+ * @param {Element} el
+ * @param {{x?: number, y?:number}} target
+ */
+export function getTransform(el, target) {
+  const currentPostion = getDomPosition(el)
+  const originPosition = getDomPosition(el, true)
+  const { x, y } = target
+  const toPosition = {
+    x: x!==undefined ? x : currentPostion.x,
+    y: y!==undefined ? y : currentPostion.y
+  }
+  const transform = `translate(${toPosition.x -
+    originPosition.x}px, ${toPosition.y - originPosition.y}px)`
+  return transform
+}
+
+/**
  * 交换元素位置
  * @todo 优化定时器
  * @param {Element} prevNode
@@ -125,22 +143,16 @@ export function exchange(prevNode, nextNode, animate = 0) {
   const exchangeList = [
     {
       from: prevNode,
-      fixFrom: true,
       to: nextNode,
-      fixTo: false,
     },
     {
       from: nextNode,
-      fixFrom: true,
       to: prevNode,
-      fixTo: false,
     },
   ];
-  exchangeList.forEach(({ from, to, fixFrom, fixTo }) => {
-    const fromPostion = getDomPosition(from, fixFrom);
-    const toPosition = getDomPosition(to, fixTo);
-    const transform = `translate(${toPosition.x -
-      fromPostion.x}px, ${toPosition.y - fromPostion.y}px)`;
+  exchangeList.forEach(({ from, to }) => {
+    const targetPosition = getDomPosition(to, false)
+    const transform = getTransform(from, targetPosition);
     addAnimate(from, transform, animate);
   });
 }
@@ -157,6 +169,7 @@ export function getTdListByTh(th) {
 }
 
 export default {
+  getTransform,
   clearAnimate,
   addAnimate,
   ANIMATED_CSS,
