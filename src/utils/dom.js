@@ -3,26 +3,27 @@ import Sortable from "sortablejs";
 const { utils } = Sortable;
 const { css } = utils;
 
-/** @type {Element[]} */
-const animatedList = [];
+/** @type {Set<Element>} */
+const animatedSet = new Set();
 
 export const ANIMATED_CSS = "el-table-draggable-animated";
-const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/
+const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
 
 /**
  * 获取原始的boundge位置
- * @param {Element} el 
+ * @param {Element} el
  * @param {boolean} ignoreTranslate
+ * @returns {{x: number, y: number}}
  */
 function getDomPosition(el, ignoreTranslate = true) {
-    const position = el.getBoundingClientRect().toJSON()
-    const translate = el.style.transform.translate
-    if (translate && ignoreTranslate) {
-        const { groups = { x: 0, y: 0 } } = (translateRegexp.exec(translate) || {})
-        position.x -= groups.x
-        position.y -= groups.y
-    }
-    return position
+  const position = el.getBoundingClientRect().toJSON();
+  const transform = el.style.transform;
+  if (transform && ignoreTranslate) {
+    const { groups = { x: 0, y: 0 } } = translateRegexp.exec(transform) || {};
+    position.x = position.x - +groups.x;
+    position.y = position.y - +groups.y;
+  }
+  return position;
 }
 
 /**
@@ -36,17 +37,24 @@ export function addAnimate(el, transform, animate = 0) {
   css(el, "transitionProperty", `transform`);
   css(el, "transitionDuration", animate + "ms");
   css(el, "transform", transform);
-  animatedList.push(el);
+  animatedSet.add(el);
 }
 
-export function clearAnimate() {
-  animatedList.forEach((el) => {
+/**
+ * 清除除了可忽略选项内的动画
+ * @param {Element[]} ignoreElList
+ */
+export function clearAnimate(ignoreElList = []) {
+  for (const el of animatedSet.values()) {
+    if (ignoreElList.includes(el)) {
+      return;
+    }
     el.classList.remove(ANIMATED_CSS);
     css(el, "transform", "");
     css(el, "transitionProperty", "");
     css(el, "transitionDuration", "");
-  });
-  animatedList.splice(0);
+    animatedSet.delete(el);
+  }
 }
 
 /**
@@ -116,19 +124,25 @@ export function exchange(prevNode, nextNode, animate = 0) {
   const exchangeList = [
     {
       from: prevNode,
+      fixFrom: true,
       to: nextNode,
+      fixTo: false,
     },
     {
       from: nextNode,
+      fixFrom: true,
       to: prevNode,
+      fixTo: true,
     },
   ];
-  exchangeList.forEach(({ from, to }) => {
-    const fromPostion = getDomPosition(from, false)
-    const toPosition = getDomPosition(to, true)
-    const transform = `translate(${toPosition.x - fromPostion.x}px, ${toPosition.y - fromPostion.y}px)`;
+  exchangeList.forEach(({ from, to, fixFrom, fixTo }) => {
+    const fromPostion = getDomPosition(from, fixFrom);
+    const toPosition = getDomPosition(to, fixTo);
+    const transform = `translate(${toPosition.x -
+      fromPostion.x}px, ${toPosition.y - fromPostion.y}px)`;
     addAnimate(from, transform, animate);
   });
+  setTimeout(() => {}, animate);
 }
 
 /**

@@ -295,7 +295,6 @@
 
             // 如果是列拖拽模式，需要左右两边自动交换
             if (!vm.row) {
-              // dom.clearAnimate()
               const { animation } = vm._sortable.options;
               // 需要交换两列所有的td
               const thList = [dragged, related]
