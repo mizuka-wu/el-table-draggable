@@ -11,6 +11,16 @@ const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
 const elTableColumnRegexp = /el-table_\d*_column_\d*/
 
 /**
+ * 重设transform
+ * @param {Element} el 
+ */
+function resetTransform(el) {
+  css(el, "transform", "");
+  css(el, "transitionProperty", "");
+  css(el, "transitionDuration", "");
+}
+
+/**
  * 获取原始的boundge位置
  * @param {Element} el
  * @param {boolean} ignoreTranslate
@@ -50,9 +60,7 @@ export function clearAnimate(targetList = []) {
   const removedIteratory = list.length ? list : animatedSet.values()
   for (const el of removedIteratory) {
     el.classList.remove(ANIMATED_CSS);
-    css(el, "transform", "");
-    css(el, "transitionProperty", "");
-    css(el, "transitionDuration", "");
+    resetTransform(el)
     if (animatedSet.has(el)) {
       animatedSet.delete(el);
     }
@@ -85,7 +93,7 @@ export function clearAnimate(targetList = []) {
  * @returns {string}
  */
 export function translateTo(el, target) {
-  clearAnimate(el)
+  resetTransform(el)
   const transform = getTransform(el, target)
   el.style.transform = transform
 }
