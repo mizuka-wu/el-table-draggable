@@ -132,7 +132,7 @@ export function exchange(prevNode, nextNode, animate = 0) {
       from: nextNode,
       fixFrom: true,
       to: prevNode,
-      fixTo: true,
+      fixTo: false,
     },
   ];
   exchangeList.forEach(({ from, to, fixFrom, fixTo }) => {
@@ -142,7 +142,6 @@ export function exchange(prevNode, nextNode, animate = 0) {
       fromPostion.x}px, ${toPosition.y - fromPostion.y}px)`;
     addAnimate(from, transform, animate);
   });
-  setTimeout(() => {}, animate);
 }
 
 /**

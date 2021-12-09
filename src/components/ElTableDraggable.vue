@@ -300,6 +300,7 @@
               const thList = [dragged, related]
               const [fromTdList, toTdList] = (willInsertAfter ? thList : thList.reverse())
                 .map(th => dom.getTdListByTh(th, context))
+
               fromTdList.forEach((fromTd, index) => {
                 const toTd = toTdList[index]
                 // 交换td位置
