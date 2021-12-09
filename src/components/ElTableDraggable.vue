@@ -299,6 +299,7 @@ export default {
 
           // 如果是列拖拽模式，需要左右两边自动交换
           if (!vm.row) {
+            dom.alignmentTableByThList(Array.from(dragged.parentNode.childNodes))
             const { animation } = vm._sortable.options;
             // 需要交换两列所有的td
             const thList = [dragged, related];

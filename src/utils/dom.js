@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import throttle from 'lodash/throttle'
 import Sortable from "sortablejs";
 const { utils } = Sortable;
 const { css } = utils;
@@ -190,7 +191,26 @@ export function getTdListByTh(th) {
   return document.querySelectorAll(`.${className}`)
 }
 
+/**
+ * 自动对齐列
+ * @param {Element[]|Element} thList 
+ */
+export const alignmentTableByThList = throttle(
+  function alignmentTableByThList(thList) {
+    const list = Array.isArray(thList) ? thList : [thList]
+    list.forEach(th => {
+      const tdList = getTdListByTh(th)
+      tdList.forEach(td => {
+        const { x } = getDomPosition(th)
+        translateTo(td, { x })
+      })
+    })
+  },
+  1000 / 60
+)
+
 export default {
+  alignmentTableByThList,
   getTransform,
   clearAnimate,
   addAnimate,

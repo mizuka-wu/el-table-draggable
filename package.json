@@ -38,6 +38,7 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "highlight.js": "^9.18.5",
+    "lodash": "^4.17.21",
     "sortablejs": "^1.14.0",
     "vue": "^2.6.11",
     "vue-highlight-component": "^1.0.0"
