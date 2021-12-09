@@ -305,7 +305,7 @@
                 const toTd = toTdList[index]
                 // 交换td位置
                 dom.exchange(fromTd, toTd, animation)
-              })
+              })              
             }
 
             vm.$emit("move", evt, originalEvent);

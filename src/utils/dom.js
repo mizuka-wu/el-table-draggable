@@ -16,7 +16,7 @@ const elTableColumnRegexp = /el-table_\d*_column_\d*/
  * @param {boolean} ignoreTranslate
  * @returns {{x: number, y: number}}
  */
-function getDomPosition(el, ignoreTranslate = true) {
+export function getDomPosition(el, ignoreTranslate = true) {
   const position = el.getBoundingClientRect().toJSON();
   const transform = el.style.transform;
   if (transform && ignoreTranslate) {
@@ -43,10 +43,11 @@ export function addAnimate(el, transform, animate = 0) {
 
 /**
  * 清除除了可忽略选项内的动画
- * @param {Element[]} targetList
+ * @param {Element[]|Element} targetList
  */
 export function clearAnimate(targetList = []) {
-  const removedIteratory = targetList.length ? targetList : animatedSet.values()
+  const list = Array.isArray(targetList) ? targetList : [targetList]
+  const removedIteratory = list.length ? list : animatedSet.values()
   for (const el of removedIteratory) {
     el.classList.remove(ANIMATED_CSS);
     css(el, "transform", "");
@@ -84,7 +85,9 @@ export function clearAnimate(targetList = []) {
  * @returns {string}
  */
 export function translateTo(el, target) {
-
+  clearAnimate(el)
+  const transform = getTransform(el, target)
+  el.style.transform = transform
 }
 
 /**
@@ -185,6 +188,8 @@ export default {
   addAnimate,
   ANIMATED_CSS,
   getTdListByTh,
+  translateTo,
+  getDomPosition,
   insertAfter,
   insertBefore,
   exchange,
