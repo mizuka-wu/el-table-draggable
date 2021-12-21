@@ -1,0 +1,82 @@
+{
+  "name": "el-table-draggable",
+  "description": "make el-table draggable, support row, column, expanded, sortable.js",
+  "version": "1.1.0",
+  "author": {
+    "name": "mizuka",
+    "email": "mizuka.wu@outlook.com",
+    "url": "https://www.mizuka.top"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mizuka-wu/el-table-draggable.git"
+  },
+  "keywords": [
+    "element-ui",
+    "vue",
+    "vue2",
+    "sortablejs",
+    "sortable.js",
+    "table",
+    "draggable",
+    "column",
+    "el-table",
+    "expanded-row"
+  ],
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build:demo": "vue-cli-service build --dest examples",
+    "build": "vue-cli-service build --target lib --name ElTableDraggable src/components/ElTableDraggable.vue",
+    "lint": "vue-cli-service lint"
+  },
+  "main": "dist/ElTableDraggable.umd.js",
+  "vetur": {
+    "tags": "vetur/tags.json",
+    "attributes": "vetur/attributes.json"
+  },
+  "files": [
+    "src/components",
+    "vetur",
+    "dist"
+  ],
+  "dependencies": {
+    "core-js": "^3.6.5",
+    "highlight.js": "^9.18.5",
+    "lodash": "^4.17.21",
+    "sortablejs": "^1.14.0",
+    "vue": "^2.6.11",
+    "vue-highlight-component": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/sortablejs": "^1.10.7",
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "babel-eslint": "^10.1.0",
+    "element-ui": "^2.15.3",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "mockjs": "^1.1.0",
+    "vue-router": "^3.5.3",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
