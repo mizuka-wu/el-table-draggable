@@ -3,7 +3,7 @@
  * 根据不同类型使用不同的option
  */
 import dom, { EMPTY_FIX_CSS } from "./dom";
-import { getLelveFromClassName } from "./utils";
+import { getLevelFromClassName, get } from "./utils";
 
 export const DOM_MAPPING_NAME = "_mapping";
 export const DOM_MAPPING_OBSERVER_NAME = "_mappingObserver";
@@ -72,7 +72,7 @@ function createDomMapping(tableInstance) {
     }
 
     // 创建dom对应的信息
-    const level = getLelveFromClassName(tr.className);
+    const level = getLevelFromClassName(tr.className);
     /** @type {DomInfo} */
     const domInfo = {
       el: tr,
@@ -268,6 +268,10 @@ export const CONFIG = {
       elTableInstance[DOM_MAPPING_OBSERVER_NAME] = observer;
       startObserver();
 
+      setTimeout(() => {
+        console.log(mapping)
+      }, 2000)
+
       return {
         onStart(evt) {
           observer.disconnect();
@@ -296,7 +300,7 @@ export const CONFIG = {
 
           // 树形展开的处理, expandedRows包含之前expanded的部分
           if (item.className.includes("--level-")) {
-            const targetLevel = getLelveFromClassName(item.className);
+            const targetLevel = getLevelFromClassName(item.className);
             // 将当前index和之后index区间内的(子树)全部当作展开项处理
             const trList = Array.from(from.children);
             // 之后一个同级的，如果没有则是高一级-1
@@ -304,7 +308,7 @@ export const CONFIG = {
               if (index <= oldIndex) {
                 return false;
               }
-              const level = getLelveFromClassName(tr.className);
+              const level = getLevelFromClassName(tr.className);
               return level <= targetLevel;
             });
 

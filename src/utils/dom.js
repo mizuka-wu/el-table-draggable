@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import throttle from "lodash/throttle";
 import Sortable from "sortablejs";
+import { getLevelFromClassName, getLevelRowClassName } from './utils'
 const { utils } = Sortable;
 const { css } = utils;
 
@@ -11,6 +12,23 @@ export const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
 export const ANIMATED_CSS = "el-table-draggable-animated";
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
 const elTableColumnRegexp = /el-table_\d*_column_\d*/;
+
+/**
+ * 修改某个dom的className
+ * @param {Element} tr 
+ * @param {number} [targetLevel] 
+ */
+export function changeRowLevel(tr, targetLevel = 0) {
+  const sourceLevel = getLevelFromClassName(tr.className)
+  if (sourceLevel === targetLevel) {
+    return
+  }
+
+  const sourceClassName = getLevelRowClassName(sourceLevel)
+  const targetClassName = getLevelRowClassName(targetLevel)
+  tr.classList.remove(sourceClassName)
+  tr.classList.add(targetClassName)
+}
 
 /**
  * 清除造成的所有的副作用
