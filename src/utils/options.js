@@ -23,17 +23,15 @@ export const DOM_MAPPING_OBSERVER_NAME = "_mappingObserver";
 function getSameLevelParentDomInfo(domInfo, targetLevel = 0) {
   const { level, parent } = domInfo;
 
-  if (level > targetLevel || !parent) {
-    return null;
-  }
-
   if (level === targetLevel) {
     return domInfo;
   }
 
-  if (level < targetLevel) {
-    return getSameLevelParentDomInfo(parent, targetLevel);
+  if (!parent) {
+    return null;
   }
+
+  return getSameLevelParentDomInfo(parent, targetLevel);
 }
 
 /**
