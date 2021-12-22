@@ -6,7 +6,6 @@ import dom, { EMPTY_FIX_CSS } from "./dom";
 import { getLevelFromClassName, get } from "./utils";
 
 export const DOM_MAPPING_NAME = "_mapping";
-export const DOM_MAPPING_OBSERVER_NAME = "_mappingObserver";
 
 /**
  * Dom映射表
@@ -37,19 +36,14 @@ function getSameLevelParentDomInfo(domInfo, targetLevel = 0) {
 /**
  * 根据类型当前的dom结构，自动构建每个tr的对应数据关系
  * @param {Vue} tableInstance ElTable实例
+ * @param {Map<Element, DomInfo>} [mapping]
  * @returns {Map<Element, DomInfo>}
  */
-function createDomMapping(tableInstance) {
-  if (!tableInstance[DOM_MAPPING_NAME]) {
-    tableInstance[DOM_MAPPING_NAME] = new Map();
-  }
-
+function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
   // table的配置
   const { data, treeProps } = tableInstance;
   const { children } = treeProps;
 
-  /** @type {DomMapping} */
-  const mapping = tableInstance[DOM_MAPPING_NAME];
   mapping.clear();
 
   /** @type {DomInfo} 最新被使用的dom */
@@ -188,30 +182,35 @@ export const CONFIG = {
       const PROP = "data";
 
       /** @type {DomMapping} 映射表 */
-      const mapping = createDomMapping(elTableInstance);
+      const mapping = createOrUpdateDomMapping(elTableInstance);
 
       /** 自动监听重建映射表 */
-      if (elTableInstance[DOM_MAPPING_OBSERVER_NAME]) {
-        elTableInstance[DOM_MAPPING_OBSERVER_NAME].disconnect();
+      if (elTableInstance[DOM_MAPPING_NAME]) {
+        elTableInstance[DOM_MAPPING_NAME].stop();
       }
       const observer = new MutationObserver(() => {
-        createDomMapping(elTableInstance);
+        createOrUpdateDomMapping(elTableInstance, mapping);
       });
-      const startObserver = () => {
-        observer.observe(
-          elTableInstance.$el.querySelector(CONFIG.ROW.WRAPPER),
-          {
-            childList: true,
-            subtree: true,
-          }
-        );
+      const mappingOberver = {
+        mapping,
+        start: () => {
+          observer.observe(
+            elTableInstance.$el.querySelector(CONFIG.ROW.WRAPPER),
+            {
+              childList: true,
+              subtree: true,
+            }
+          );
+        },
+        stop() {
+          observer.disconnect();
+        },
       };
-      elTableInstance[DOM_MAPPING_OBSERVER_NAME] = observer;
-      startObserver();
+      elTableInstance[DOM_MAPPING_NAME] = mappingOberver;
+      mappingOberver.start();
 
       return {
         onStart(evt) {
-          // observer.disconnect();
           /**
            * 空列表增加empty class 帮助可以拖拽进去
            * 这个是全局需要加的
@@ -229,11 +228,11 @@ export const CONFIG = {
           /**
            * expanded/树表格的处理
            */
-          const { item, from, oldIndex } = evt;
-
-          // 带expanded的处理
+          const { item } = evt;
           const domInfo = mapping.get(item);
-          console.log(domInfo);
+          // 收起拖动的行的已展开行
+          const { childrenList } = domInfo;
+          childrenList.forEach((tr) => {});
         },
         onMove(evt, originalEvt) {
           const { related, willInsertAfter, dragged } = evt;
