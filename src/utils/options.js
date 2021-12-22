@@ -240,7 +240,10 @@ export const CONFIG = {
           const domInfo = mapping.get(item);
           // 收起拖动的行的已展开行
           const { childrenList } = domInfo;
-          childrenList.forEach((tr) => {});
+          childrenList.forEach((tr) => {
+            /** @todo 改为动画形式 */
+            tr.style.display = "none";
+          });
         },
         onMove(evt, originalEvt) {
           const { related, willInsertAfter, dragged } = evt;
@@ -277,6 +280,18 @@ export const CONFIG = {
 
           // 交换dom位置
           exchange(oldIndex, fromList, newIndex, toList, pullMode);
+
+          /**
+           * 将children带回来
+           * @type {DomInfo}
+           */
+          const { childrenList } =
+            fromContext[DOM_MAPPING_NAME].mapping.get(item);
+          childrenList.forEach((tr) => {
+            tr.style.display = null;
+            /** @todo 增加层级计算, 树结构支持 */
+            dom.insertAfter(tr, item);
+          });
 
           // 通知更新
           updateElTableInstance(from, to, context, function (tableContext) {
