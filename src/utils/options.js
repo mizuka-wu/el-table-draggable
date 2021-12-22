@@ -9,7 +9,7 @@ export const DOM_MAPPING_NAME = "_mapping";
 
 /**
  * Dom映射表
- * @typedef {{ el:Element, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: Element[] }} DomInfo
+ * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: Element[] }} DomInfo
  * @typedef {Map<Element, DomInfo>} DomMapping
  */
 
@@ -56,8 +56,10 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
     childrenList: [],
   };
 
-  const trList = tableInstance.$el.querySelectorAll(`${CONFIG.ROW.WRAPPER} tr`);
-  trList.forEach((tr) => {
+  const trList = tableInstance.$el.querySelectorAll(
+    `${CONFIG.ROW.WRAPPER} > tr`
+  );
+  trList.forEach((tr, index) => {
     const { className } = tr;
     // expanded的行自动和最近那个操作的行绑定
     if (!className) {
@@ -71,6 +73,7 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
     const level = getLevelFromClassName(tr.className);
     /** @type {DomInfo} */
     const domInfo = {
+      elIndex: index,
       el: tr,
       level,
       data,
@@ -218,6 +221,11 @@ export const CONFIG = {
             draggableTable[DOM_MAPPING_NAME] &&
               draggableTable[DOM_MAPPING_NAME].stop();
           }
+          /**
+           * @todo 解决手动关闭后会有的错位问题
+           * 导致原因，default-expanded-all
+           * 需要记录一下当前打开的行，结束之后还原状态
+           */
 
           /**
            * 空列表增加empty class 帮助可以拖拽进去
@@ -271,34 +279,52 @@ export const CONFIG = {
         onEnd(evt) {
           dom.cleanUp();
 
-          const { to, from, pullMode } = evt;
-          const toContext = context.get(to);
-          let toList = toContext[PROP];
+          /**
+           * list/index需要重新修正计算
+           */
+          const { to, from, pullMode, newIndex, item } = evt;
           const fromContext = context.get(from);
-          let fromList = fromContext[PROP];
-          let { newIndex, oldIndex, item } = evt;
+          const toContext = context.get(to);
+
+          /** @type {DomInfo} */
+          const fromDomInfo = fromContext[DOM_MAPPING_NAME].mapping.get(item);
+          /**
+           * @type {DomInfo[]}
+           * 之前目标位置的dom元素, 因为dom已经换了，所以需要通过elIndex的方式重新找回来
+           */
+          const toDomInfoList = Array.from(
+            toContext[DOM_MAPPING_NAME].mapping.values()
+          );
+          const toDomInfo = toDomInfoList.find(
+            (domInfo) => domInfo.elIndex === newIndex
+          );
 
           // 交换dom位置
-          exchange(oldIndex, fromList, newIndex, toList, pullMode);
+          exchange(
+            fromDomInfo.index,
+            fromDomInfo.data,
+            toDomInfo.index,
+            toDomInfo.data,
+            pullMode
+          );
+
+          // 通知更新
+          updateElTableInstance(from, to, context, function (tableContext) {
+            const draggableContext = tableContext.$parent; // 包裹组件
+
+            const data = tableContext[PROP];
+            draggableContext.$emit("input", data);
+          });
 
           /**
            * 将children带回来
            * @type {DomInfo}
            */
-          const { childrenList } =
-            fromContext[DOM_MAPPING_NAME].mapping.get(item);
+          const { childrenList } = fromDomInfo;
           childrenList.forEach((tr) => {
             tr.style.display = null;
             /** @todo 增加层级计算, 树结构支持 */
             dom.insertAfter(tr, item);
-          });
-
-          // 通知更新
-          updateElTableInstance(from, to, context, function (tableContext) {
-            const draggableContext = tableContext.$parent;
-
-            const data = tableContext[PROP];
-            draggableContext.$emit("input", data);
           });
 
           /**

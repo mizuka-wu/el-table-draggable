@@ -6,7 +6,7 @@
     >
       <el-table
         :data="list"
-        default-expand-all
+        :default-expand-all="true"
         row-key="id"
       >
         <el-table-column
@@ -14,7 +14,8 @@
           type="expand"
         >
           <template slot-scope="{row}">
-            <ElTableDraggable
+            helloworld {{ row.index }}
+            <!-- <ElTableDraggable
               group="singleTableExpanded"
               v-on="$listeners"
             >
@@ -32,7 +33,7 @@
                   v-for="column of columns"
                 ></el-table-column>
               </el-table>
-            </ElTableDraggable>
+            </ElTableDraggable>-->
           </template>
         </el-table-column>
         <el-table-column
