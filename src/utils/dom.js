@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import throttle from "lodash/throttle";
 import Sortable from "sortablejs";
-import { getLevelFromClassName, getLevelRowClassName } from './utils'
+import { getLevelFromClassName, getLevelRowClassName } from "./utils";
 const { utils } = Sortable;
 const { css } = utils;
 
@@ -15,19 +15,19 @@ const elTableColumnRegexp = /el-table_\d*_column_\d*/;
 
 /**
  * 修改某个dom的className
- * @param {Element} tr 
- * @param {number} [targetLevel] 
+ * @param {Element} tr
+ * @param {number} [targetLevel]
  */
 export function changeRowLevel(tr, targetLevel = 0) {
-  const sourceLevel = getLevelFromClassName(tr.className)
+  const sourceLevel = getLevelFromClassName(tr.className);
   if (sourceLevel === targetLevel) {
-    return
+    return;
   }
 
-  const sourceClassName = getLevelRowClassName(sourceLevel)
-  const targetClassName = getLevelRowClassName(targetLevel)
-  tr.classList.remove(sourceClassName)
-  tr.classList.add(targetClassName)
+  const sourceClassName = getLevelRowClassName(sourceLevel);
+  const targetClassName = getLevelRowClassName(targetLevel);
+  tr.classList.remove(sourceClassName);
+  tr.classList.add(targetClassName);
 }
 
 /**
@@ -115,8 +115,9 @@ export function getTransform(el, target) {
     x: x !== undefined ? x : currentPostion.x,
     y: y !== undefined ? y : currentPostion.y,
   };
-  const transform = `translate(${toPosition.x -
-    originPosition.x}px, ${toPosition.y - originPosition.y}px)`;
+  const transform = `translate(${toPosition.x - originPosition.x}px, ${
+    toPosition.y - originPosition.y
+  }px)`;
   return transform;
 }
 

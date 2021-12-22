@@ -11,7 +11,7 @@
 /* eslint-disable no-unused-vars */
 import { Sortable } from "sortablejs";
 import getUa from "../utils/ua";
-import { CONFIG, DOM_MAPPING_NAME, DOM_MAPPING_OBSERVER_NAME } from "../utils/options";
+import { CONFIG, DOM_MAPPING_NAME } from "../utils/options";
 
 export default {
   name: "ElementUiElTableDraggable",
@@ -111,13 +111,12 @@ export default {
         /**
          * 销毁映射表和对应监听器
          */
-        if (this.table[DOM_MAPPING_OBSERVER_NAME]) {
-          this.table[DOM_MAPPING_OBSERVER_NAME].disconnect()
+        const domMapping = this.table[DOM_MAPPING_NAME]
+        if (domMapping) {
+          domMapping.stop()
+          domMapping.mapping.clear()
+          delete this.table[DOM_MAPPING_NAME]
         }
-        const extractProperties = [DOM_MAPPING_NAME, DOM_MAPPING_OBSERVER_NAME]
-        extractProperties.forEach(prop => {
-          delete this.table[prop]
-        })
 
         /**
          * 销毁表格
