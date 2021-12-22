@@ -10,7 +10,7 @@ export const DOM_MAPPING_OBSERVER_NAME = "_mappingObserver";
 
 /**
  * Dom映射表
- * @typedef {{ el:Element, level: number, data: any[],index: number, parent: DomInfo | null, expendTr: Element | null }} DomInfo
+ * @typedef {{ el:Element, level: number, data: any[],index: number, parent: DomInfo | null, expendTrList: Element[] }} DomInfo
  * @typedef {Map<Element, DomInfo>} DomMapping
  */
 
@@ -59,7 +59,7 @@ function createDomMapping(tableInstance) {
     data,
     index: -1,
     parent: null,
-    expendTr: null,
+    expendTrList: [],
   };
 
   const trList = tableInstance.$el.querySelectorAll(`${CONFIG.ROW.WRAPPER} tr`);
@@ -67,7 +67,9 @@ function createDomMapping(tableInstance) {
     const { className } = tr;
     // expanded的行自动和最近那个操作的行绑定
     if (!className) {
-      latestDomInfo && (latestDomInfo.expendTr = tr);
+      if (latestDomInfo) {
+        latestDomInfo.expendTrList.push(tr);
+      }
       return;
     }
 
@@ -80,7 +82,7 @@ function createDomMapping(tableInstance) {
       data,
       index: 0,
       parent: null,
-      expendTr: null,
+      expendTrList: [],
     };
     /**
      * 这里需要两个步骤，如果相差一级的话，当作是parent，
@@ -138,8 +140,9 @@ function fixExpendIndex(sourceIndex, context) {
   const indexOfExpandedRows = expandRows
     .map((row) => data.indexOf(row))
     .map((rowIndex, index) => index + rowIndex + 1); // index 之前有几个展开了， rowIndex + 1， 不算之前已经展开的话，实际应该在的位置
-  const offset = indexOfExpandedRows.filter((index) => index < sourceIndex)
-    .length; // 偏移量，也就是有几个expand的row小于当前row
+  const offset = indexOfExpandedRows.filter(
+    (index) => index < sourceIndex
+  ).length; // 偏移量，也就是有几个expand的row小于当前row
 
   return sourceIndex - offset;
 }
@@ -269,8 +272,8 @@ export const CONFIG = {
       startObserver();
 
       setTimeout(() => {
-        console.log(mapping)
-      }, 2000)
+        console.log(mapping);
+      }, 2000);
 
       return {
         onStart(evt) {
@@ -384,7 +387,7 @@ export const CONFIG = {
           exchange(oldIndex, fromList, newIndex, toList, pullMode);
 
           // 通知更新
-          updateElTableInstance(from, to, context, function(tableContext) {
+          updateElTableInstance(from, to, context, function (tableContext) {
             const draggableContext = tableContext.$parent;
             if (movingExpandedRows.length) {
               // 缓存需要展开的row
@@ -450,9 +453,8 @@ export const CONFIG = {
           dom.alignmentTableByThList(Array.from(dragged.parentNode.childNodes));
           // 需要交换两列所有的td
           const thList = [dragged, related];
-          const [fromTdList, toTdList] = (willInsertAfter
-            ? thList
-            : thList.reverse()
+          const [fromTdList, toTdList] = (
+            willInsertAfter ? thList : thList.reverse()
           ).map((th) => dom.getTdListByTh(th));
 
           fromTdList.forEach((fromTd, index) => {
@@ -483,7 +485,7 @@ export const CONFIG = {
           }
 
           // 通知对应的实例
-          updateElTableInstance(from, to, context, function(tableContext) {
+          updateElTableInstance(from, to, context, function (tableContext) {
             const draggableContext = tableContext.$parent;
             const columns = draggableContext.value
               ? draggableContext.value
