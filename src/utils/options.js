@@ -10,7 +10,7 @@ export const DOM_MAPPING_OBSERVER_NAME = "_mappingObserver";
 
 /**
  * Dom映射表
- * @typedef {{ el:Element, level: number, data: any[],index: number, parent: DomInfo | null, expendTrList: Element[] }} DomInfo
+ * @typedef {{ el:Element, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: Element[] }} DomInfo
  * @typedef {Map<Element, DomInfo>} DomMapping
  */
 
@@ -59,7 +59,7 @@ function createDomMapping(tableInstance) {
     data,
     index: -1,
     parent: null,
-    expendTrList: [],
+    childrenList: [],
   };
 
   const trList = tableInstance.$el.querySelectorAll(`${CONFIG.ROW.WRAPPER} tr`);
@@ -68,7 +68,7 @@ function createDomMapping(tableInstance) {
     // expanded的行自动和最近那个操作的行绑定
     if (!className) {
       if (latestDomInfo) {
-        latestDomInfo.expendTrList.push(tr);
+        latestDomInfo.childrenList.push(tr);
       }
       return;
     }
@@ -82,7 +82,7 @@ function createDomMapping(tableInstance) {
       data,
       index: 0,
       parent: null,
-      expendTrList: [],
+      childrenList: [],
     };
     /**
      * 这里需要两个步骤，如果相差一级的话，当作是parent，
@@ -95,6 +95,11 @@ function createDomMapping(tableInstance) {
         domInfo.index = latestDomInfo.index + 1;
         domInfo.parent = latestDomInfo.parent;
         domInfo.data = latestDomInfo.data;
+
+        if (domInfo.parent) {
+          domInfo.parent.childrenList.push(domInfo);
+        }
+
         break;
       }
       // 之前的那个tr的下级
@@ -103,6 +108,7 @@ function createDomMapping(tableInstance) {
         // 通过children字端获取下一个data
         const childrenData = latestDomInfo.data[latestDomInfo.index][children];
         domInfo.data = childrenData;
+        domInfo.parent.childrenList.push(domInfo);
         break;
       }
       // 正常情况，朔源最新的一个同级的
@@ -118,6 +124,9 @@ function createDomMapping(tableInstance) {
         domInfo.index = sameLevelDomInfo.index + 1;
         domInfo.parent = sameLevelDomInfo.parent;
         domInfo.data = sameLevelDomInfo.data;
+        if (domInfo.parent) {
+          domInfo.parent.childrenList.push(domInfo);
+        }
         break;
       }
     }
@@ -125,75 +134,6 @@ function createDomMapping(tableInstance) {
     latestDomInfo = domInfo;
   });
   return mapping;
-}
-
-/**
- * 修正index
- * 具体行为为获取当前是打开的expand的具体位置
- * 计算出每个expand容器tr的位置
- * 取最大的那个位置
- */
-function fixExpendIndex(sourceIndex, context) {
-  const { expandRows } = context.store.states;
-  const { data } = context;
-
-  const indexOfExpandedRows = expandRows
-    .map((row) => data.indexOf(row))
-    .map((rowIndex, index) => index + rowIndex + 1); // index 之前有几个展开了， rowIndex + 1， 不算之前已经展开的话，实际应该在的位置
-  const offset = indexOfExpandedRows.filter(
-    (index) => index < sourceIndex
-  ).length; // 偏移量，也就是有几个expand的row小于当前row
-
-  return sourceIndex - offset;
-}
-
-/**
- * 修正index和list
- * 模拟出来dom结构，看每个index对应的list和原始list
- * @todo 兼容rowKey为函数
- */
-function fixTreeIndexAndList(targetIndex, context, sourceIndex = -1) {
-  const { store, data, treeProps } = context;
-  const { states } = store;
-  const { treeData, rowKey } = states;
-  const { children } = treeProps;
-
-  // 扁平化处理
-  function flatData(list, level = 0, flated = []) {
-    list.forEach((item, index) => {
-      flated.push({
-        level,
-        list,
-        index,
-        children: item[children],
-      });
-      // treeData里有它，也就是有子节点
-      if (treeData[item[rowKey]]) {
-        const subList = item[children];
-        flatData(subList, level + 1, flated);
-      }
-    });
-    return flated;
-  }
-
-  let flatDom = flatData(data, 0, []);
-
-  // 因为拖拽的时候把子层级排除了，所以这里计算扁平化的时候也要排除, 算法一致
-  if (sourceIndex > -1) {
-    const sourceItem = flatDom[sourceIndex];
-    const sourceItemNextSameLevelIndex = flatDom.findIndex((tr, index) => {
-      if (index <= sourceIndex) {
-        return false;
-      }
-      const { level } = tr;
-      return level <= sourceItem.level;
-    });
-    flatDom = flatDom.filter((item, index) => {
-      return index <= sourceIndex || index >= sourceItemNextSameLevelIndex;
-    });
-  }
-
-  return flatDom[targetIndex];
 }
 
 /**
@@ -246,8 +186,6 @@ export const CONFIG = {
      */
     OPTION(context, elTableInstance, animation) {
       const PROP = "data";
-      /** @type {Element[]} */
-      let movingExpandedRows = [];
 
       /** @type {DomMapping} 映射表 */
       const mapping = createDomMapping(elTableInstance);
@@ -271,14 +209,9 @@ export const CONFIG = {
       elTableInstance[DOM_MAPPING_OBSERVER_NAME] = observer;
       startObserver();
 
-      setTimeout(() => {
-        console.log(mapping);
-      }, 2000);
-
       return {
         onStart(evt) {
-          observer.disconnect();
-          console.log(mapping);
+          // observer.disconnect();
           /**
            * 空列表增加empty class 帮助可以拖拽进去
            * 这个是全局需要加的
@@ -293,37 +226,14 @@ export const CONFIG = {
             }
           });
 
+          /**
+           * expanded/树表格的处理
+           */
           const { item, from, oldIndex } = evt;
 
           // 带expanded的处理
-          if (item.className.includes("expanded")) {
-            const expandedTr = item.nextSibling;
-            movingExpandedRows = [expandedTr];
-          }
-
-          // 树形展开的处理, expandedRows包含之前expanded的部分
-          if (item.className.includes("--level-")) {
-            const targetLevel = getLevelFromClassName(item.className);
-            // 将当前index和之后index区间内的(子树)全部当作展开项处理
-            const trList = Array.from(from.children);
-            // 之后一个同级的，如果没有则是高一级-1
-            const nextSameLevelTrIndex = trList.findIndex((tr, index) => {
-              if (index <= oldIndex) {
-                return false;
-              }
-              const level = getLevelFromClassName(tr.className);
-              return level <= targetLevel;
-            });
-
-            movingExpandedRows = trList.slice(
-              oldIndex + 1,
-              nextSameLevelTrIndex === -1 ? undefined : nextSameLevelTrIndex
-            );
-          }
-
-          movingExpandedRows.forEach((tr) => {
-            tr.parentNode.removeChild(tr);
-          });
+          const domInfo = mapping.get(item);
+          console.log(domInfo);
         },
         onMove(evt, originalEvt) {
           const { related, willInsertAfter, dragged } = evt;
@@ -358,54 +268,19 @@ export const CONFIG = {
           let fromList = fromContext[PROP];
           let { newIndex, oldIndex, item } = evt;
 
-          if (item.className.includes("--level-")) {
-            /** tree模式下需要修正 */
-            const fixedFrom = fixTreeIndexAndList(
-              oldIndex,
-              fromContext,
-              oldIndex
-            );
-            oldIndex = fixedFrom.index;
-            fromList = fixedFrom.list;
-            /**
-             * 如果是在同一个表格下面，需要修正to的context
-             */
-            const fixedTo = fixTreeIndexAndList(
-              newIndex,
-              toContext,
-              toContext === fromContext ? oldIndex : -1
-            );
-            newIndex = fixedTo.index;
-            toList = fixedTo.list;
-          } else {
-            /** expand模式下需要进行修正 */
-            oldIndex = fixExpendIndex(oldIndex, fromContext);
-            newIndex = fixExpendIndex(newIndex, toContext);
-          }
-
           // 交换dom位置
           exchange(oldIndex, fromList, newIndex, toList, pullMode);
 
           // 通知更新
           updateElTableInstance(from, to, context, function (tableContext) {
             const draggableContext = tableContext.$parent;
-            if (movingExpandedRows.length) {
-              // 缓存需要展开的row
-              const rows = movingExpandedRows;
-              rows.forEach((row) => {
-                dom.insertAfter(row, item);
-              });
-              movingExpandedRows = [];
-            }
 
             const data = tableContext[PROP];
             draggableContext.$emit("input", data);
           });
 
-          // 强制清空
-          movingExpandedRows = [];
           // 重新开始dom变化的监听
-          startObserver();
+          // startObserver();
         },
       };
     },

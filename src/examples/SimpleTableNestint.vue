@@ -1,11 +1,30 @@
 <template>
   <div>
-    <ElTableDraggable group="singleTable" v-on="$listeners">
-      <el-table :data="list" row-key="id" default-expand-all>
-        <el-table-column label type="expand">
+    <ElTableDraggable
+      group="singleTable"
+      v-on="$listeners"
+    >
+      <el-table
+        :data="list"
+        default-expand-all
+        row-key="id"
+      >
+        <el-table-column
+          label
+          type="expand"
+        >
           <template slot-scope="{row}">
-            <ElTableDraggable group="singleTableExpanded" v-on="$listeners">
-              <el-table :data="row.subList" row-key="id">
+            <ElTableDraggable
+              group="singleTableExpanded"
+              v-on="$listeners"
+            >
+              <el-table
+                :data="row.subList"
+                :highlight-current-row="false"
+                :row-style="{background: '#F2F6FC'}"
+                :show-header="false"
+                row-key="id"
+              >
                 <el-table-column
                   :key="column.key"
                   :label="column.key"
@@ -25,7 +44,10 @@
       </el-table>
     </ElTableDraggable>
     <ListViewer :value="list" />
-    <CodeViewer :code="code" lang="html" />
+    <CodeViewer
+      :code="code"
+      lang="html"
+    />
   </div>
 </template>
 
