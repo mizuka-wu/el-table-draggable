@@ -151,7 +151,7 @@ export default {
   },
   mounted() {
     if (!window.__ElTableDraggableContext) {
-      window.__ElTableDraggableContext = new WeakMap();
+      window.__ElTableDraggableContext = new Map();
     }
     this.init();
   },

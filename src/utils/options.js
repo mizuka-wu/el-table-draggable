@@ -212,6 +212,14 @@ export const CONFIG = {
       return {
         onStart(evt) {
           /**
+           * 全局暂停监听dom变化
+           */
+          for (const draggableTable of context.values()) {
+            draggableTable[DOM_MAPPING_NAME] &&
+              draggableTable[DOM_MAPPING_NAME].stop();
+          }
+
+          /**
            * 空列表增加empty class 帮助可以拖拽进去
            * 这个是全局需要加的
            */
@@ -278,8 +286,13 @@ export const CONFIG = {
             draggableContext.$emit("input", data);
           });
 
-          // 重新开始dom变化的监听
-          // startObserver();
+          /**
+           * 全局开始监听dom变化
+           */
+          for (const draggableTable of context.values()) {
+            draggableTable[DOM_MAPPING_NAME] &&
+              draggableTable[DOM_MAPPING_NAME].start();
+          }
         },
       };
     },
