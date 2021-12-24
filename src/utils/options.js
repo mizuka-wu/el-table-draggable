@@ -2,8 +2,8 @@
 /**
  * 根据不同类型使用不同的option
  */
-import dom, { EMPTY_FIX_CSS } from "./dom";
-import { getLevelFromClassName, get } from "./utils";
+import dom, { EMPTY_FIX_CSS, TREE_PROXY_CSS } from "./dom";
+import { getLevelFromClassName } from "./utils";
 
 export const DOM_MAPPING_NAME = "_mapping";
 
