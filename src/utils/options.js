@@ -9,7 +9,7 @@ export const DOM_MAPPING_NAME = "_mapping";
 
 /**
  * Dom映射表
- * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: Element[] }} DomInfo
+ * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: DomInfo[] }} DomInfo
  * @typedef {Map<Element, DomInfo>} DomMapping
  */
 
@@ -61,26 +61,34 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
   );
   trList.forEach((tr, index) => {
     const { className } = tr;
-    // expanded的行自动和最近那个操作的行绑定
+
+    /** @type {DomInfo} */
+    const domInfo = {
+      elIndex: index,
+      el: tr,
+      level: 0,
+      data,
+      index: 0,
+      parent: null,
+      childrenList: [],
+    };
+
+    /**
+     * expanded的容器行自动和最近那个操作的行绑定，因为没有明确的类名称，所以需要特殊处理
+     */
     if (!className) {
       if (latestDomInfo) {
-        latestDomInfo.childrenList.push(tr);
+        domInfo.data = latestDomInfo.data
+        domInfo.level = latestDomInfo.level + 1
+        domInfo.parent = latestDomInfo
+        latestDomInfo.childrenList.push(domInfo);
       }
       return;
     }
 
     // 创建dom对应的信息
     const level = getLevelFromClassName(tr.className);
-    /** @type {DomInfo} */
-    const domInfo = {
-      elIndex: index,
-      el: tr,
-      level,
-      data,
-      index: 0,
-      parent: null,
-      childrenList: [],
-    };
+    domInfo.level = level
     /**
      * 这里需要两个步骤，如果相差一级的话，当作是parent，
      * 如果超过一级的话，需要回朔查找同级别的对象，以其为基准继续判定
@@ -247,9 +255,9 @@ export const CONFIG = {
           const domInfo = mapping.get(item);
           // 收起拖动的行的已展开行
           const { childrenList } = domInfo;
-          childrenList.forEach((tr) => {
+          childrenList.forEach((children) => {
             /** @todo 改为动画形式 */
-            tr.style.display = "none";
+            children.el.style.display = "none";
           });
         },
         onMove(evt, originalEvt) {
@@ -320,7 +328,8 @@ export const CONFIG = {
            * @type {DomInfo}
            */
           const { childrenList } = fromDomInfo;
-          childrenList.forEach((tr) => {
+          childrenList.forEach((children) => {
+            const tr = children.el
             tr.style.display = null;
             /** @todo 增加层级计算, 树结构支持 */
             dom.insertAfter(tr, item);
