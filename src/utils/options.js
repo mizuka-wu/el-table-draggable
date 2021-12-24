@@ -9,7 +9,7 @@ export const DOM_MAPPING_NAME = "_mapping";
 
 /**
  * Dom映射表
- * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: DomInfo[] }} DomInfo
+ * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: V | null, childrenList: DomInfo[] }} DomInfo
  * @typedef {Map<Element, DomInfo>} DomMapping
  */
 
@@ -321,7 +321,19 @@ export const CONFIG = {
             (domInfo) => domInfo.elIndex === newIndex
           );
 
-          // 交换数据位置
+          /**
+           * 数据层面的交换
+           */
+          // mapping层面的交换
+          exchange(
+            fromDomInfo.index,
+            fromDomInfo.data,
+            toDomInfo.index,
+            toDomInfo.data,
+            pullMode
+          );
+
+          // 数据层面的交换
           exchange(
             fromDomInfo.index,
             fromDomInfo.data,
@@ -354,9 +366,7 @@ export const CONFIG = {
           }
           // dom结构部分
           if (toDomInfo.parent) {
-            setTimeout(() => {
-              dom.insertAfter(toDomInfo.el, toDomInfo.parent.el);
-            });
+            dom.insertAfter(toDomInfo.el, toDomInfo.parent.el);
           }
 
           /**
