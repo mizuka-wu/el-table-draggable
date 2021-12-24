@@ -10,7 +10,7 @@ export const DOM_MAPPING_NAME = "_mapping";
 /**
  * Dom映射表
  * el=>对应的data数据
- * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: DomInfo[] }} DomInfo
+ * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: DomInfo[], type: 'root' | 'leaf' | 'proxy' }} DomInfo
  * @typedef {Map<Element, DomInfo>} DomMapping
  */
 
@@ -52,14 +52,11 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
     el: tableInstance.$el,
     level: -1,
     // root的data需要特殊处理，通过-1取到
-    data: {
-      [-1]: {
-        [children]: data,
-      },
-    },
+    data: [],
     index: -1,
     parent: null,
     childrenList: [],
+    type: "root",
   };
 
   const trList = tableInstance.$el.querySelectorAll(
@@ -124,7 +121,9 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
           domInfo.parent = latestDomInfo;
 
           const childrenData =
-            latestDomInfo.data[latestDomInfo.index][children];
+            latestDomInfo.type === "root"
+              ? data
+              : latestDomInfo.data[latestDomInfo.index][children];
           domInfo.data = childrenData;
           domInfo.parent.childrenList.push(domInfo);
           break;
