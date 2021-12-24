@@ -60,88 +60,97 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
     `${CONFIG.ROW.WRAPPER} > tr`
   );
   trList.forEach((tr, index) => {
-    const { className } = tr;
+    try {
+      const { className } = tr;
 
-    /** @type {DomInfo} */
-    const domInfo = {
-      elIndex: index,
-      el: tr,
-      level: 0,
-      data,
-      index: 0,
-      parent: null,
-      childrenList: [],
-    };
+      /** @type {DomInfo} */
+      const domInfo = {
+        elIndex: index,
+        el: tr,
+        level: 0,
+        data,
+        index: 0,
+        parent: null,
+        childrenList: [],
+      };
 
-    /**
-     * expanded的容器行
-     * 相当于其父容器的代理
-     * 自动和最近那个操作的行绑定，因为没有明确的类名称，所以需要特殊处理
-     */
-    if (!className) {
-      if (latestDomInfo) {
-        Object.assign(domInfo, {
-          ...latestDomInfo,
-          el: tr,
-          elIndex: index,
-        })
-        latestDomInfo.childrenList.push(domInfo);
+      /**
+       * expanded的容器行
+       * 相当于其父容器的代理
+       * 自动和最近那个操作的行绑定，因为没有明确的类名称，所以需要特殊处理
+       */
+      if (!className) {
+        if (latestDomInfo) {
+          Object.assign(domInfo, {
+            ...latestDomInfo,
+            el: tr,
+            elIndex: index,
+          });
+          latestDomInfo.childrenList.push(domInfo);
+        }
+        mapping.set(tr, domInfo);
+        return;
+      }
+
+      // 创建dom对应的信息
+      const level = getLevelFromClassName(tr.className);
+      domInfo.level = level;
+      /**
+       * 这里需要两个步骤，如果相差一级的话，当作是parent，
+       * 如果超过一级的话，需要回朔查找同级别的对象，以其为基准继续判定
+       */
+      const levelGap = level - latestDomInfo.level;
+      switch (levelGap) {
+        // 同级，继承
+        case 0: {
+          domInfo.index = latestDomInfo.index + 1;
+          domInfo.parent = latestDomInfo.parent;
+          domInfo.data = latestDomInfo.data;
+
+          if (domInfo.parent) {
+            domInfo.parent.childrenList.push(domInfo);
+          }
+
+          break;
+        }
+        // 之前的那个tr的下级
+        case 1: {
+          domInfo.parent = latestDomInfo;
+          // 通过children字端获取下一个data
+          const childrenData =
+            latestDomInfo.data[latestDomInfo.index][children];
+          domInfo.data = childrenData;
+          domInfo.parent.childrenList.push(domInfo);
+          break;
+        }
+        // 正常情况，朔源最新的一个同级的
+        default: {
+          const sameLevelDomInfo = getSameLevelParentDomInfo(
+            latestDomInfo,
+            level
+          );
+          if (!sameLevelDomInfo) {
+            console.error(tr, latestDomInfo);
+            throw new Error("找不到其同级dom");
+          }
+          domInfo.index = sameLevelDomInfo.index + 1;
+          domInfo.parent = sameLevelDomInfo.parent;
+          domInfo.data = sameLevelDomInfo.data;
+          if (domInfo.parent) {
+            domInfo.parent.childrenList.push(domInfo);
+          }
+          break;
+        }
       }
       mapping.set(tr, domInfo);
-      return;
+      latestDomInfo = domInfo;
+    } catch (e) {
+      console.error({
+        tr,
+        latestDomInfo,
+      });
+      console.error(e);
     }
-
-    // 创建dom对应的信息
-    const level = getLevelFromClassName(tr.className);
-    domInfo.level = level
-    /**
-     * 这里需要两个步骤，如果相差一级的话，当作是parent，
-     * 如果超过一级的话，需要回朔查找同级别的对象，以其为基准继续判定
-     */
-    const levelGap = level - latestDomInfo.level;
-    switch (levelGap) {
-      // 同级，继承
-      case 0: {
-        domInfo.index = latestDomInfo.index + 1;
-        domInfo.parent = latestDomInfo.parent;
-        domInfo.data = latestDomInfo.data;
-
-        if (domInfo.parent) {
-          domInfo.parent.childrenList.push(domInfo);
-        }
-
-        break;
-      }
-      // 之前的那个tr的下级
-      case 1: {
-        domInfo.parent = latestDomInfo;
-        // 通过children字端获取下一个data
-        const childrenData = latestDomInfo.data[latestDomInfo.index][children];
-        domInfo.data = childrenData;
-        domInfo.parent.childrenList.push(domInfo);
-        break;
-      }
-      // 正常情况，朔源最新的一个同级的
-      default: {
-        const sameLevelDomInfo = getSameLevelParentDomInfo(
-          latestDomInfo,
-          level
-        );
-        if (!sameLevelDomInfo) {
-          console.error(tr, latestDomInfo);
-          throw new Error("找不到其同级dom");
-        }
-        domInfo.index = sameLevelDomInfo.index + 1;
-        domInfo.parent = sameLevelDomInfo.parent;
-        domInfo.data = sameLevelDomInfo.data;
-        if (domInfo.parent) {
-          domInfo.parent.childrenList.push(domInfo);
-        }
-        break;
-      }
-    }
-    mapping.set(tr, domInfo);
-    latestDomInfo = domInfo;
   });
   return mapping;
 }
@@ -237,7 +246,7 @@ export const CONFIG = {
             draggableTable[DOM_MAPPING_NAME] &&
               draggableTable[DOM_MAPPING_NAME].stop();
 
-            draggableTable.store.states.defaultExpandAll = false
+            draggableTable.store.states.defaultExpandAll = false;
           }
 
           /**
@@ -312,7 +321,7 @@ export const CONFIG = {
             (domInfo) => domInfo.elIndex === newIndex
           );
 
-          // 交换dom位置
+          // 交换数据位置
           exchange(
             fromDomInfo.index,
             fromDomInfo.data,
@@ -324,30 +333,39 @@ export const CONFIG = {
           // 通知更新
           updateElTableInstance(from, to, context, function (tableContext) {
             const draggableContext = tableContext.$parent; // 包裹组件
-
             const data = tableContext[PROP];
             draggableContext.$emit("input", data);
           });
 
           /**
-           * 将children带回来
-           * @type {DomInfo}
+           * dom修正，因为exchange之后el-table可能会错乱，所以需要修正位置
+           * 将原始的dom信息带回来children带回来
            */
-          const { childrenList } = fromDomInfo;
-          childrenList.forEach((children) => {
-            const tr = children.el
-            tr.style.display = null;
-            /** @todo 增加层级计算, 树结构支持 */
-            dom.insertAfter(tr, item);
-          });
+          // expanded部分
+          if (fromDomInfo.childrenList.length) {
+            fromDomInfo.childrenList.reverse().forEach((children) => {
+              const tr = children.el;
+              tr.style.display = null;
+              /** @todo 增加层级计算, 树结构支持 */
+              dom.insertAfter(tr, item);
+            });
+            // 设置其自动展开
+            toContext.toggleRowExpansion(fromDomInfo.data, true);
+          }
+          // dom结构部分
+          if (toDomInfo.parent) {
+            setTimeout(() => {
+              dom.insertAfter(toDomInfo.el, toDomInfo.parent.el);
+            });
+          }
 
           /**
            * 全局开始监听dom变化
            */
-          for (const draggableTable of context.values()) {
-            draggableTable[DOM_MAPPING_NAME] &&
-              draggableTable[DOM_MAPPING_NAME].start();
-          }
+          // for (const draggableTable of context.values()) {
+          //   draggableTable[DOM_MAPPING_NAME] &&
+          //     draggableTable[DOM_MAPPING_NAME].start();
+          // }
         },
       };
     },
