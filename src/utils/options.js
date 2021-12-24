@@ -228,15 +228,16 @@ export const CONFIG = {
       return {
         onStart(evt) {
           /**
-           * 全局暂停监听dom
-           *
-           * @todo 解决手动关闭后会有的错位问题
-           * 导致原因，default-expanded-all
-           * 需要记录一下当前打开的行，结束之后还原状态
+           * 1. 全局暂停监听dom
+           * 2. @todo 解决手动关闭后会有的错位问题
+           *    导致原因，default-expanded-all
+           *    需要记录一下当前打开的行，结束之后还原状态（待定）
            */
           for (const draggableTable of context.values()) {
             draggableTable[DOM_MAPPING_NAME] &&
               draggableTable[DOM_MAPPING_NAME].stop();
+
+            draggableTable.store.states.defaultExpandAll = false
           }
 
           /**
