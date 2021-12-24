@@ -158,6 +158,7 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
       console.error(e);
     }
   });
+
   return mapping;
 }
 
@@ -179,7 +180,7 @@ function updateElTableInstance(from, to, context, handler) {
 }
 
 /**
- * 交换两个dom元素
+ * 将某个元素从某个列表插入到另一个对应位置
  * @param {number} oldIndex
  * @param {any[]} fromList
  * @param {nmber} newIndex
@@ -314,9 +315,6 @@ export const CONFIG = {
         onEnd(evt) {
           dom.cleanUp();
 
-          /**
-           * list/index需要重新修正计算
-           */
           const { to, from, pullMode, newIndex, item } = evt;
           const fromContext = context.get(from);
           const toContext = context.get(to);
@@ -330,9 +328,20 @@ export const CONFIG = {
           const toDomInfoList = Array.from(
             toContext[DOM_MAPPING_NAME].mapping.values()
           );
-          const toDomInfo = toDomInfoList.find(
+
+          let toDomInfo = toDomInfoList.find(
             (domInfo) => domInfo.elIndex === newIndex
           );
+          /**
+           * toDomInfo修正
+           * 因为多级结构的问题，跨层级需要进行一个修正
+           * 例如1，2，3结构，如果2有2-1的话，拖动到2的情况下
+           * 其实是希望能够插入到2-1上前
+           * 所以实际上需要进行一层index的重新计算，其最末尾一个才是真的index
+           */
+          if (toDomInfo.childrenList.length > 0) {
+            toDomInfo = toDomInfo.childrenList[0];
+          }
 
           /**
            * 数据层面的交换
@@ -369,7 +378,6 @@ export const CONFIG = {
           // 根据mapping自动重新绘制, 最高一层就不用rebuild了
           if (toDomInfo.parent && toDomInfo.parent.parent) {
             toDomInfo.parent.childrenList.reverse().forEach((domInfo) => {
-              console.log(domInfo.el, toDomInfo.parent.el);
               dom.insertAfter(domInfo.el, toDomInfo.parent.el);
             });
           }
