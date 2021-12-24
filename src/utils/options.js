@@ -9,7 +9,8 @@ export const DOM_MAPPING_NAME = "_mapping";
 
 /**
  * Dom映射表
- * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: V | null, childrenList: DomInfo[] }} DomInfo
+ * el=>对应的data数据
+ * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: DomInfo[] }} DomInfo
  * @typedef {Map<Element, DomInfo>} DomMapping
  */
 
@@ -46,11 +47,16 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
 
   mapping.clear();
 
-  /** @type {DomInfo} 最新被使用的dom */
+  /** @type {DomInfo} 最新被使用的dom, 默认是采用了整个table作为root */
   let latestDomInfo = {
     el: tableInstance.$el,
-    level: 0,
-    data,
+    level: -1,
+    // root的data需要特殊处理，通过-1取到
+    data: {
+      [-1]: {
+        [children]: data,
+      },
+    },
     index: -1,
     parent: null,
     childrenList: [],
@@ -116,7 +122,7 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
         // 之前的那个tr的下级
         case 1: {
           domInfo.parent = latestDomInfo;
-          // 通过children字端获取下一个data
+
           const childrenData =
             latestDomInfo.data[latestDomInfo.index][children];
           domInfo.data = childrenData;
@@ -218,6 +224,9 @@ export const CONFIG = {
       });
       const mappingOberver = {
         mapping,
+        rebuild() {
+          createOrUpdateDomMapping(elTableInstance, mapping);
+        },
         start: () => {
           observer.observe(
             elTableInstance.$el.querySelector(CONFIG.ROW.WRAPPER),
@@ -262,6 +271,10 @@ export const CONFIG = {
               tableEl.parentNode.classList.add(EMPTY_FIX_CSS);
             }
           });
+
+          /**
+           * 给树状的行增加占位
+           */
 
           /**
            * expanded/树表格的处理
@@ -327,9 +340,9 @@ export const CONFIG = {
           // mapping层面的交换
           exchange(
             fromDomInfo.index,
-            fromDomInfo.data,
+            fromDomInfo.parent.childrenList,
             toDomInfo.index,
-            toDomInfo.data,
+            toDomInfo.parent.childrenList,
             pullMode
           );
 
@@ -353,6 +366,13 @@ export const CONFIG = {
            * dom修正，因为exchange之后el-table可能会错乱，所以需要修正位置
            * 将原始的dom信息带回来children带回来
            */
+          // 根据mapping自动重新绘制, 最高一层就不用rebuild了
+          if (toDomInfo.parent && toDomInfo.parent.parent) {
+            toDomInfo.parent.childrenList.reverse().forEach((domInfo) => {
+              console.log(domInfo.el, toDomInfo.parent.el);
+              dom.insertAfter(domInfo.el, toDomInfo.parent.el);
+            });
+          }
           // expanded部分
           if (fromDomInfo.childrenList.length) {
             fromDomInfo.childrenList.reverse().forEach((children) => {
@@ -364,18 +384,20 @@ export const CONFIG = {
             // 设置其自动展开
             toContext.toggleRowExpansion(fromDomInfo.data, true);
           }
-          // dom结构部分
-          if (toDomInfo.parent) {
-            dom.insertAfter(toDomInfo.el, toDomInfo.parent.el);
-          }
 
           /**
-           * 全局开始监听dom变化
+           * 全局重新开始监听dom变化
+           * 需要在之前dom操作完成之后进行
            */
-          // for (const draggableTable of context.values()) {
-          //   draggableTable[DOM_MAPPING_NAME] &&
-          //     draggableTable[DOM_MAPPING_NAME].start();
-          // }
+          setTimeout(() => {
+            for (const draggableTable of context.values()) {
+              const domMapping = draggableTable[DOM_MAPPING_NAME];
+              if (domMapping) {
+                domMapping.rebuild();
+                domMapping.start();
+              }
+            }
+          }, 0);
         },
       };
     },
