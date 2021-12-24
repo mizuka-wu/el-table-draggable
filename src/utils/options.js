@@ -338,8 +338,15 @@ export const CONFIG = {
            * 其实是希望能够插入到2-1上前
            * 所以实际上需要进行一层index的重新计算，其最末尾一个才是真的index
            */
+          // 某个行的根节点上
           if (toDomInfo.childrenList.length > 0) {
             toDomInfo = toDomInfo.childrenList[0];
+          }
+          // 子节点上
+          else if (toDomInfo.level > 0) {
+            const { childrenList } = toDomInfo.parent;
+            const { index } = toDomInfo;
+            toDomInfo = [...childrenList, toDomInfo.parent][index + 1];
           }
 
           /**
