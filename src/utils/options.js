@@ -74,15 +74,20 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
     };
 
     /**
-     * expanded的容器行自动和最近那个操作的行绑定，因为没有明确的类名称，所以需要特殊处理
+     * expanded的容器行
+     * 相当于其父容器的代理
+     * 自动和最近那个操作的行绑定，因为没有明确的类名称，所以需要特殊处理
      */
     if (!className) {
       if (latestDomInfo) {
-        domInfo.data = latestDomInfo.data
-        domInfo.level = latestDomInfo.level + 1
-        domInfo.parent = latestDomInfo
+        Object.assign(domInfo, {
+          ...latestDomInfo,
+          el: tr,
+          elIndex: index,
+        })
         latestDomInfo.childrenList.push(domInfo);
       }
+      mapping.set(tr, domInfo);
       return;
     }
 
