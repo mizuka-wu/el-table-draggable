@@ -9,7 +9,8 @@ const { css } = utils;
 const animatedSet = new Set();
 
 export const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
-export const TREE_PROXY_CSS = "el-table-draggable__tree-proxy-row";
+export const TREE_PLACEHOLDER_ROW_CSS =
+  "el-table-draggable__tree-placeholder-row";
 export const ANIMATED_CSS = "el-table-draggable-animated";
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
 const elTableColumnRegexp = /el-table_\d*_column_\d*/;

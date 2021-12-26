@@ -2,8 +2,8 @@
 /**
  * 根据不同类型使用不同的option
  */
-import dom, { EMPTY_FIX_CSS, TREE_PROXY_CSS } from "./dom";
-import { getLevelFromClassName } from "./utils";
+import dom, { EMPTY_FIX_CSS, TREE_PLACEHOLDER_ROW_CSS } from "./dom";
+import { getLevelFromClassName, getLevelRowClassName } from "./utils";
 
 export const DOM_MAPPING_NAME = "_mapping";
 
@@ -246,38 +246,73 @@ export const CONFIG = {
       return {
         onStart(evt) {
           /**
-           * 1. 全局暂停监听dom
-           * 2. @todo 解决手动关闭后会有的错位问题
-           *    导致原因，default-expanded-all
-           *    需要记录一下当前打开的行，结束之后还原状态（待定）
+           * 开始之前对所有表格做一定处理
            */
           for (const draggableTable of context.values()) {
+            // 暂停dom监听，防止拖拽变化不停触发
             draggableTable[DOM_MAPPING_NAME] &&
               draggableTable[DOM_MAPPING_NAME].stop();
 
+            /**
+             * 解决手动关闭后会有的错位问题
+             * 导致原因，default-expanded-all
+             * 需要记录一下当前打开的行，结束之后还原状态（待定）
+             */
             draggableTable.store.states.defaultExpandAll = false;
-          }
 
-          /**
-           * 空列表增加empty class 帮助可以拖拽进去
-           * 这个是全局需要加的
-           */
-          const tableEls = document.querySelectorAll(
-            ".el-table__body-wrapper table"
-          );
-          tableEls.forEach((tableEl) => {
+            // 如果是空表格，增加一个css
+            const tableEl = draggableTable.$el.querySelector(
+              ".el-table__body-wrapper table"
+            );
             if (tableEl.clientHeight === 0) {
               // body-wrapper增加样式，让overflw可显示同时table有个透明区域可拖动
               tableEl.parentNode.classList.add(EMPTY_FIX_CSS);
             }
-          });
+
+            /**
+             * 树状表的话，给每个树的行增加对应的占位
+             */
+            const isTree =
+              Object.keys(draggableTable.store.states.treeData).length > 0;
+            if (isTree) {
+              // 从生成的mapping重新生成一个dom树
+              const domList = Array.from(mapping.values())
+                .sort((a, b) => a.elIndex - b.elIndex)
+                .reduceRight((newDomList, domInfo, index) => {
+                  console.log(index);
+                  newDomList.push(domInfo);
+                  return newDomList;
+                }, []);
+              // 通过倒叙，在不影响前面数据的情况下，给自身增加一个下一级别的占位tr
+              // domList.reverse().forEach((domInfo) => {
+              //   const { elIndex, level } = domInfo;
+              //   const el = document.createElement("tr");
+              //   el.classList.add(
+              //     getLevelRowClassName(level + 1),
+              //     CONFIG.ROW.DRAGGABLE,
+              //     TREE_PLACEHOLDER_ROW_CSS
+              //   );
+              //   /** @type {DomInfo} */
+              //   const placeholderDomInfo = {
+              //     el,
+              //     elIndex: 0,
+              //     type: "leaf",
+              //     level: level + 1,
+              //     data: [],
+              //     index: domInfo.childrenList.length,
+              //     parent: domInfo,
+              //     childrenList: [],
+              //   };
+              //   domList.splice(elIndex, 0, placeholderDomInfo);
+              //   domInfo.childrenList.push(placeholderDomInfo);
+              //   // dom.insertAfter(el, domInfo.el);
+              // });
+              console.log(domList);
+            }
+          }
 
           /**
-           * 给树状的行增加占位
-           */
-
-          /**
-           * expanded/树表格的处理
+           * expanded/树表格的处理, 关闭展开行
            */
           const { item } = evt;
           const domInfo = mapping.get(item);
@@ -314,7 +349,7 @@ export const CONFIG = {
         onEnd(evt) {
           dom.cleanUp();
 
-          const { to, from, pullMode, newIndex, item } = evt;
+          const { to, from, pullMode, newIndex, item, oldIndex } = evt;
           const fromContext = context.get(from);
           const toContext = context.get(to);
 
@@ -333,20 +368,23 @@ export const CONFIG = {
           );
           /**
            * toDomInfo修正
+           * 向下要修正
            * 因为多级结构的问题，跨层级需要进行一个修正
            * 例如1，2，3结构，如果2有2-1的话，拖动到2的情况下
            * 其实是希望能够插入到2-1上前
            * 所以实际上需要进行一层index的重新计算，其最末尾一个才是真的index
            */
-          // 某个行的根节点上
-          if (toDomInfo.childrenList.length > 0) {
-            toDomInfo = toDomInfo.childrenList[0];
-          }
-          // 子节点上
-          else if (toDomInfo.level > 0) {
-            const { childrenList } = toDomInfo.parent;
-            const { index } = toDomInfo;
-            toDomInfo = [...childrenList, toDomInfo.parent][index + 1];
+          if (newIndex > oldIndex) {
+            // 某个行的根节点上
+            if (toDomInfo.childrenList.length > 0) {
+              toDomInfo = toDomInfo.childrenList[0];
+            }
+            // 子节点上
+            else if (toDomInfo.level > 0) {
+              const { childrenList } = toDomInfo.parent;
+              const { index } = toDomInfo;
+              toDomInfo = [...childrenList, toDomInfo.parent][index + 1];
+            }
           }
 
           /**
