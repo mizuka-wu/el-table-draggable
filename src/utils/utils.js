@@ -10,11 +10,11 @@ export function getLevelFromClassName(className) {
 
 /**
  * 获取class
- * @param {number} level 
+ * @param {number} level
  * @returns {string}
  */
 export function getLevelRowClassName(level) {
-  return `el-table__row--level-${level}`
+  return `el-table__row--level-${level}`;
 }
 
 export default {
