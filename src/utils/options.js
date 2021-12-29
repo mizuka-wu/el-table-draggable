@@ -441,7 +441,7 @@ export const CONFIG = {
            */
           // 根据mapping自动重新绘制, 最高一层就不用rebuild了
           if (toDomInfo.parent && toDomInfo.parent.parent) {
-            dom.toggleExpansion(toDomInfo, true);
+            dom.toggleExpansion(toDomInfo.parent, true);
           }
           // expanded部分
           dom.toggleExpansion(fromDomInfo, true);
