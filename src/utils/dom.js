@@ -247,6 +247,34 @@ export const alignmentTableByThList = throttle(function alignmentTableByThList(
 },
 1000 / 60);
 
+/**
+ *
+ * @param {import('./options.js').DomInfo} domInfo
+ * @param {boolean} expanded 是否收起
+ */
+export function toggleExpansion(domInfo, expanded = true) {
+  // 插入排序需要倒序插入
+  domInfo.childrenList
+    .slice()
+    .reverse()
+    .forEach((childrenDomInfo) => {
+      if (expanded) {
+        childrenDomInfo.el.style.display = null;
+        insertAfter(childrenDomInfo.el, domInfo.el);
+      } else {
+        childrenDomInfo.el.style.display = "none";
+      }
+      childrenDomInfo.el.style.display = expanded ? null : "none";
+
+      /**
+       * 处理子节点
+       */
+      if (childrenDomInfo.childrenList.length) {
+        toggleExpansion(childrenDomInfo, expanded);
+      }
+    });
+}
+
 export default {
   alignmentTableByThList,
   getTransform,
@@ -260,4 +288,5 @@ export default {
   insertBefore,
   exchange,
   cleanUp,
+  toggleExpansion,
 };
