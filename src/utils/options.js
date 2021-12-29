@@ -2,11 +2,7 @@
 /**
  * 根据不同类型使用不同的option
  */
-import dom, {
-  EMPTY_FIX_CSS,
-  insertAfter,
-  TREE_PLACEHOLDER_ROW_CSS,
-} from "./dom";
+import dom, { EMPTY_FIX_CSS, TREE_PLACEHOLDER_ROW_CSS } from "./dom";
 import {
   getLevelFromClassName,
   getLevelRowClassName,
@@ -347,11 +343,7 @@ export const CONFIG = {
           const { item } = evt;
           const domInfo = mapping.get(item);
           // 收起拖动的行的已展开行
-          const { childrenList } = domInfo;
-          childrenList.forEach((children) => {
-            /** @todo 改为动画形式 */
-            children.el.style.display = "none";
-          });
+          dom.toggleExpansion(domInfo, false);
         },
         onMove(evt) {
           const { related, willInsertAfter, dragged, to, from } = evt;
@@ -372,7 +364,7 @@ export const CONFIG = {
             relatedDomInfo.childrenList.forEach((children) => {
               // expanded或者是影子行
               if (children.type === "proxy") {
-                insertAfter(children.el, relatedDomInfo.el);
+                dom.insertAfter(children.el, relatedDomInfo.el);
               }
             });
           });
@@ -454,21 +446,11 @@ export const CONFIG = {
            */
           // 根据mapping自动重新绘制, 最高一层就不用rebuild了
           if (toDomInfo.parent && toDomInfo.parent.parent) {
-            toDomInfo.parent.childrenList.reverse().forEach((domInfo) => {
-              dom.insertAfter(domInfo.el, toDomInfo.parent.el);
-            });
+            dom.toggleExpansion(toDomInfo, true);
           }
           // expanded部分
-          if (fromDomInfo.childrenList.length) {
-            fromDomInfo.childrenList.reverse().forEach((children) => {
-              const tr = children.el;
-              tr.style.display = null;
-              /** @todo 增加层级计算, 树结构支持 */
-              dom.insertAfter(tr, item);
-            });
-            // 设置其自动展开
-            toContext.toggleRowExpansion(fromDomInfo.data, true);
-          }
+          dom.toggleExpansion(fromDomInfo, true);
+          toContext.toggleRowExpansion(fromDomInfo.data, true);
 
           /**
            * 全局重新开始监听dom变化
