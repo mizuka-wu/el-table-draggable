@@ -23,11 +23,11 @@
     data() {
       return {
         columns,
-        list: createData(3).map((item) => ({
+        list: createData(2).map((item) => ({
           index: item.index + 1,
           children: createData(2).map((data) => ({
             index: `${item.index + 1}-${data.index + 1}`,
-            children: createData(2).map((subData) => ({
+            children: createData(4).map((subData) => ({
               index: `${item.index + 1}-${data.index + 1}-${subData.index + 1}`,
             })),
           })),

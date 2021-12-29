@@ -1,3 +1,4 @@
+import { isVisible } from "./dom";
 const LEVEL_REGEXP = /--level-(\d+)/;
 /**
  * 根据行名称获取当前的层级
@@ -33,23 +34,46 @@ export function checkIsTreeTable(tableInstance) {
  * 例如1，2，3结构，如果2有2-1的话，拖动到2的情况下
  * 其实是希望能够插入到2-1上前
  * 所以实际上需要进行一层index的重新计算，其最末尾一个才是真的index
- * @param {import('./options').DomInfo} domInfo
+ * @param {import('./options').DomInfo} domInfo 目标节点
+ * @param {import('./options').DomInfo} originDomInfo 原始正在拖拽的
  * @param {boolean} willInsertAfter
  * @returns {import('./options').DomInfo}
  */
-export function fixeDomInfoByDirection(domInfo, willInsertAfter) {
+export function fixeDomInfoByDirection(
+  domInfo,
+  originDomInfo,
+  willInsertAfter
+) {
   if (!willInsertAfter) {
     return domInfo;
   }
+  const { childrenList } = domInfo;
+  const visibleChildrenList = childrenList.filter((item) => isVisible(item.el));
   // 某个行的根节点上
-  if (domInfo.childrenList.length > 0) {
-    return domInfo.childrenList[0];
+  if (visibleChildrenList.length > 0) {
+    return visibleChildrenList[0];
   }
   // 子节点上
   else if (domInfo.level > 0) {
+    const { index, parent } = domInfo;
     const { childrenList } = domInfo.parent;
-    const { index } = domInfo;
-    return [...childrenList, domInfo.parent][index + 1];
+
+    // 父亲节点的代理，因为是向下拖拽，实际上的index应该+1
+    const parentDomInfoProxy = {
+      ...parent,
+      index: parent.index + 1,
+    };
+
+    // 如果是跨数据层面拖拽，同样需要+1
+    const offset = childrenList.includes(originDomInfo) ? 0 : 1;
+    const list = [
+      ...childrenList.slice(0, childrenList.length - 1).map((item) => ({
+        ...item,
+        index: item.index + offset,
+      })),
+      parentDomInfoProxy,
+    ];
+    return list[index];
   }
   return domInfo;
 }
