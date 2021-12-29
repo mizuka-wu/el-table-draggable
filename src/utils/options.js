@@ -2,7 +2,11 @@
 /**
  * 根据不同类型使用不同的option
  */
-import dom, { EMPTY_FIX_CSS, TREE_PLACEHOLDER_ROW_CSS } from "./dom";
+import dom, {
+  CUSTOMER_INDENT_CSS,
+  EMPTY_FIX_CSS,
+  TREE_PLACEHOLDER_ROW_CSS,
+} from "./dom";
 import {
   getLevelFromClassName,
   getLevelRowClassName,
@@ -376,20 +380,10 @@ export const CONFIG = {
             relatedDomInfo,
             willInsertAfter
           );
-          const { states } = fromContext.store;
-          const { rowKey, treeData } = states;
-          const draggedRow = draggedDomInfo.data[draggedDomInfo.index];
-          const key =
-            typeof rowKey === "function" ? rowKey(draggedRow) : rowKey;
-          // 设定treeData里的level 和交换的行同级
-          try {
-            treeData[draggedRow[key]].level = targrtDomInfo.level;
-          } catch (e) {
-            console.error(e);
-            console.error(
-              new Error("can not find data from element tree data")
-            );
-          }
+          const {
+            states: { indent },
+          } = fromContext.store;
+          dom.changeDomInfoLevel(draggedDomInfo, targrtDomInfo.level, indent);
         },
         onEnd(evt) {
           dom.cleanUp();
@@ -443,6 +437,7 @@ export const CONFIG = {
           /**
            * dom修正，因为exchange之后el-table可能会错乱，所以需要修正位置
            * 将原始的dom信息带回来children带回来
+           * 删除一些临时加进去的行
            */
           // 根据mapping自动重新绘制, 最高一层就不用rebuild了
           if (toDomInfo.parent && toDomInfo.parent.parent) {
@@ -452,6 +447,9 @@ export const CONFIG = {
           dom.toggleExpansion(fromDomInfo, true);
           toContext.toggleRowExpansion(fromDomInfo.data, true);
 
+          document.querySelectorAll(`.${CUSTOMER_INDENT_CSS}`).forEach((el) => {
+            dom.remove(el);
+          });
           /**
            * 全局重新开始监听dom变化
            * 需要在之前dom操作完成之后进行
