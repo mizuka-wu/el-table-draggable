@@ -73,7 +73,7 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
   );
   trList.forEach((tr, index) => {
     try {
-      const { className } = tr;
+      const { className, style } = tr;
 
       /** @type {DomInfo} */
       const domInfo = {
@@ -253,6 +253,8 @@ export const CONFIG = {
       elTableInstance[DOM_MAPPING_NAME] = mappingOberver;
       mappingOberver.start();
 
+      window.HELL = mapping;
+
       return {
         onStart(evt) {
           /**
@@ -378,6 +380,7 @@ export const CONFIG = {
            */
           const targrtDomInfo = fixeDomInfoByDirection(
             relatedDomInfo,
+            draggedDomInfo,
             willInsertAfter
           );
           const {
@@ -403,6 +406,7 @@ export const CONFIG = {
           );
           const toDomInfo = fixeDomInfoByDirection(
             toDomInfoList.find((domInfo) => domInfo.elIndex === newIndex),
+            fromDomInfo,
             newIndex > oldIndex
           );
 
@@ -445,8 +449,10 @@ export const CONFIG = {
           }
           // expanded部分
           dom.toggleExpansion(fromDomInfo, true);
+          /** @todo 缓存是否强制expanded */
           toContext.toggleRowExpansion(fromDomInfo.data, true);
 
+          //移除手动生成的位移
           document.querySelectorAll(`.${CUSTOMER_INDENT_CSS}`).forEach((el) => {
             dom.remove(el);
           });

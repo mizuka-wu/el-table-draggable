@@ -314,6 +314,15 @@ export function changeDomInfoLevel(domInfo, level = 0, indent = 16) {
   });
 }
 
+/**
+ * 判断是否可见
+ * @param {Element} el
+ * @returns {boolean}
+ */
+export function isVisible(el) {
+  return window.getComputedStyle(el).display !== "none";
+}
+
 export default {
   alignmentTableByThList,
   getTransform,
@@ -330,4 +339,5 @@ export default {
   cleanUp,
   toggleExpansion,
   changeDomInfoLevel,
+  isVisible,
 };
