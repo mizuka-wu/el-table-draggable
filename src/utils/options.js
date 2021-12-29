@@ -2,8 +2,17 @@
 /**
  * 根据不同类型使用不同的option
  */
-import dom, { EMPTY_FIX_CSS, TREE_PLACEHOLDER_ROW_CSS } from "./dom";
-import { getLevelFromClassName, getLevelRowClassName } from "./utils";
+import dom, {
+  EMPTY_FIX_CSS,
+  insertAfter,
+  TREE_PLACEHOLDER_ROW_CSS,
+} from "./dom";
+import {
+  getLevelFromClassName,
+  getLevelRowClassName,
+  checkIsTreeTable,
+  fixeDomInfoByDirection,
+} from "./utils";
 
 export const DOM_MAPPING_NAME = "_mapping";
 
@@ -88,6 +97,7 @@ function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
             ...latestDomInfo,
             el: tr,
             elIndex: index,
+            type: "proxy",
           });
           latestDomInfo.childrenList.push(domInfo);
         }
@@ -270,44 +280,64 @@ export const CONFIG = {
             }
 
             /**
-             * 树状表的话，给每个树的行增加对应的占位
+             * 树状表的话
+             * 1. 判断一下每一行是不是把indent给补上了，没有的自动增加
+             * @todo
+             * 2. 给每个树的行增加对应的占位
+             *    在占位部分，拖到子节点，否则拖到同级
              */
-            const isTree =
-              Object.keys(draggableTable.store.states.treeData).length > 0;
-            if (isTree) {
-              // 从生成的mapping重新生成一个dom树
-              const domList = Array.from(mapping.values())
-                .sort((a, b) => a.elIndex - b.elIndex)
-                .reduceRight((newDomList, domInfo, index) => {
-                  console.log(index);
-                  newDomList.push(domInfo);
-                  return newDomList;
-                }, []);
-              // 通过倒叙，在不影响前面数据的情况下，给自身增加一个下一级别的占位tr
-              // domList.reverse().forEach((domInfo) => {
-              //   const { elIndex, level } = domInfo;
-              //   const el = document.createElement("tr");
-              //   el.classList.add(
-              //     getLevelRowClassName(level + 1),
-              //     CONFIG.ROW.DRAGGABLE,
-              //     TREE_PLACEHOLDER_ROW_CSS
-              //   );
-              //   /** @type {DomInfo} */
-              //   const placeholderDomInfo = {
-              //     el,
-              //     elIndex: 0,
-              //     type: "leaf",
-              //     level: level + 1,
-              //     data: [],
-              //     index: domInfo.childrenList.length,
-              //     parent: domInfo,
-              //     childrenList: [],
-              //   };
-              //   domList.splice(elIndex, 0, placeholderDomInfo);
-              //   domInfo.childrenList.push(placeholderDomInfo);
-              //   // dom.insertAfter(el, domInfo.el);
-              // });
-              console.log(domList);
+            if (checkIsTreeTable(draggableTable)) {
+              // 需要给每个level0的行增加一个占位
+              // const itemLevel = getLevelFromClassName(evt.item.className);
+              // // 从生成的mapping重新生成一个dom树，插入placeholder的，这样可以保证拖到不同的位置
+              // const domList = Array.from(mapping.values())
+              //   .sort((a, b) => a.elIndex - b.elIndex)
+              //   .reduce((newDomList, domInfo) => {
+              //     newDomList.push(domInfo);
+              //     /**
+              //      * 添加占位行(需要排除正在拖拽的以及其子孙)
+              //      */
+              //     const { level, el } = domInfo;
+              //     const sameLevelParentDomInfo = getSameLevelParentDomInfo(
+              //       el,
+              //       itemLevel
+              //     );
+              //     if (
+              //       sameLevelParentDomInfo &&
+              //       sameLevelParentDomInfo.el === evt.item
+              //     ) {
+              //       return newDomList;
+              //     }
+              //     // 创建一个占位，用来判断是拖动到同级还是子级
+              //     const placeholderEl = document.createElement("tr");
+              //     placeholderEl.style.width = `${domInfo.el.offsetWidth}px`;
+              //     placeholderEl.classList.add(
+              //       getLevelRowClassName(level + 1),
+              //       CONFIG.ROW.DRAGGABLE,
+              //       TREE_PLACEHOLDER_ROW_CSS
+              //     );
+              //     /** @type {DomInfo} */
+              //     const placeholderDomInfo = {
+              //       el: placeholderEl,
+              //       elIndex: 0,
+              //       type: "leaf",
+              //       level: level + 1,
+              //       data: [],
+              //       index: domInfo.childrenList.length,
+              //       parent: domInfo,
+              //       childrenList: [],
+              //     };
+              //     newDomList.push(placeholderDomInfo);
+              //     dom.insertAfter(placeholderDomInfo.el, domInfo.el);
+              //     return newDomList;
+              //   }, [])
+              //   // 刷新elIndex
+              //   .map((item, index) => {
+              //     return {
+              //       ...item,
+              //       elIndex: index,
+              //     };
+              //   });
             }
           }
 
@@ -323,27 +353,50 @@ export const CONFIG = {
             children.el.style.display = "none";
           });
         },
-        onMove(evt, originalEvt) {
-          const { related, willInsertAfter, dragged } = evt;
+        onMove(evt) {
+          const { related, willInsertAfter, dragged, to, from } = evt;
+          const fromContext = context.get(from);
+          const toContext = context.get(to);
+          /** @type {DomInfo} */
+          const draggedDomInfo =
+            fromContext[DOM_MAPPING_NAME].mapping.get(dragged);
+          /** @type {DomInfo} */
+          const relatedDomInfo =
+            toContext[DOM_MAPPING_NAME].mapping.get(related);
+
           /**
-           * 如果该行是展开列，需要调整样式
+           * relatedDomInfo，自动将children插入到自身后方
+           * @todo 需要增加动画效果，目标直接插入，需要在下一循环，位置变化好后再配置
            */
-          if (related.className.includes("expanded")) {
-            // 预防万一，判断一下展开行下一行是不是真实的已展开的行(没有className)
-            const expandedTr =
-              related.nextSibling &&
-              related.nextSibling.className === "" &&
-              related.nextSibling;
-            if (expandedTr) {
-              setTimeout(() => {
-                if (willInsertAfter) {
-                  dom.insertAfter(dragged, expandedTr, animation);
-                } else {
-                  dom.insertBefore(dragged, related, animation);
-                }
-              });
-              return false;
-            }
+          setTimeout(() => {
+            relatedDomInfo.childrenList.forEach((children) => {
+              // expanded或者是影子行
+              if (children.type === "proxy") {
+                insertAfter(children.el, relatedDomInfo.el);
+              }
+            });
+          });
+
+          /**
+           * 判断是否需要修正当前dragged的对应level
+           */
+          const targrtDomInfo = fixeDomInfoByDirection(
+            relatedDomInfo,
+            willInsertAfter
+          );
+          const { states } = fromContext.store;
+          const { rowKey, treeData } = states;
+          const draggedRow = draggedDomInfo.data[draggedDomInfo.index];
+          const key =
+            typeof rowKey === "function" ? rowKey(draggedRow) : rowKey;
+          // 设定treeData里的level 和交换的行同级
+          try {
+            treeData[draggedRow[key]].level = targrtDomInfo.level;
+          } catch (e) {
+            console.error(e);
+            console.error(
+              new Error("can not find data from element tree data")
+            );
           }
         },
         onEnd(evt) {
@@ -362,30 +415,10 @@ export const CONFIG = {
           const toDomInfoList = Array.from(
             toContext[DOM_MAPPING_NAME].mapping.values()
           );
-
-          let toDomInfo = toDomInfoList.find(
-            (domInfo) => domInfo.elIndex === newIndex
+          const toDomInfo = fixeDomInfoByDirection(
+            toDomInfoList.find((domInfo) => domInfo.elIndex === newIndex),
+            newIndex > oldIndex
           );
-          /**
-           * toDomInfo修正
-           * 向下要修正
-           * 因为多级结构的问题，跨层级需要进行一个修正
-           * 例如1，2，3结构，如果2有2-1的话，拖动到2的情况下
-           * 其实是希望能够插入到2-1上前
-           * 所以实际上需要进行一层index的重新计算，其最末尾一个才是真的index
-           */
-          if (newIndex > oldIndex) {
-            // 某个行的根节点上
-            if (toDomInfo.childrenList.length > 0) {
-              toDomInfo = toDomInfo.childrenList[0];
-            }
-            // 子节点上
-            else if (toDomInfo.level > 0) {
-              const { childrenList } = toDomInfo.parent;
-              const { index } = toDomInfo;
-              toDomInfo = [...childrenList, toDomInfo.parent][index + 1];
-            }
-          }
 
           /**
            * 数据层面的交换
