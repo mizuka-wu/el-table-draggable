@@ -11,7 +11,9 @@ const animatedSet = new Set();
 export const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
 export const TREE_PLACEHOLDER_ROW_CSS =
   "el-table-draggable__tree-placeholder-row";
-export const ANIMATED_CSS = "el-table-draggable-animated";
+export const ANIMATED_CSS = "el-table-draggable__animated";
+export const INDENT_CSS = "el-table__indent";
+export const CUSTOMER_INDENT_CSS = "el-table-draggable__indent";
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
 const elTableColumnRegexp = /el-table_\d*_column_\d*/;
 
@@ -217,6 +219,13 @@ export function exchange(prevNode, nextNode, animate = 0) {
 }
 
 /**
+ * @param {Element} el
+ */
+export function remove(el) {
+  el.parentElement.removeChild(el);
+}
+
+/**
  * 从th获取对应的td
  * @todo 支持跨表格获取tds
  * @param {Element} th
@@ -248,7 +257,7 @@ export const alignmentTableByThList = throttle(function alignmentTableByThList(
 1000 / 60);
 
 /**
- *
+ * 切换row的打开还是关闭
  * @param {import('./options.js').DomInfo} domInfo
  * @param {boolean} expanded 是否收起
  */
@@ -259,8 +268,10 @@ export function toggleExpansion(domInfo, expanded = true) {
     .reverse()
     .forEach((childrenDomInfo) => {
       if (expanded) {
+        // 展开的话，需要显示，并修正位置和indent
         childrenDomInfo.el.style.display = null;
         insertAfter(childrenDomInfo.el, domInfo.el);
+        changeDomInfoLevel(childrenDomInfo, childrenDomInfo.level);
       } else {
         childrenDomInfo.el.style.display = "none";
       }
@@ -275,6 +286,34 @@ export function toggleExpansion(domInfo, expanded = true) {
     });
 }
 
+/**
+ * 切换某个domInfo的锁进
+ * @param {import('./options.js').DomInfo} domInfo
+ * @param {number} level
+ * @param {number} indent
+ */
+export function changeDomInfoLevel(domInfo, level = 0, indent = 16) {
+  const { el } = domInfo;
+  domInfo.level = level;
+  changeRowLevel(el, level);
+  const cell = el.querySelector("td:nth-child(1) .cell");
+  if (!cell) {
+    return;
+  }
+  // 判断是否拥有indent
+  const targetIndent = level * indent;
+  let indentWrapper = cell.querySelector(`.${INDENT_CSS}`);
+  if (!indentWrapper) {
+    indentWrapper = document.createElement("span");
+    indentWrapper.classList.add(INDENT_CSS, CUSTOMER_INDENT_CSS);
+    insertBefore(indentWrapper, cell.firstChild);
+  }
+  indentWrapper.style.paddingLeft = `${targetIndent}px`;
+  domInfo.childrenList.forEach((children) => {
+    changeDomInfoLevel(children, level + 1, indent);
+  });
+}
+
 export default {
   alignmentTableByThList,
   getTransform,
@@ -286,7 +325,9 @@ export default {
   getDomPosition,
   insertAfter,
   insertBefore,
+  remove,
   exchange,
   cleanUp,
   toggleExpansion,
+  changeDomInfoLevel,
 };
