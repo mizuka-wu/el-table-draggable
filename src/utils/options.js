@@ -5,14 +5,9 @@
 import dom, {
   CUSTOMER_INDENT_CSS,
   EMPTY_FIX_CSS,
-  TREE_PLACEHOLDER_ROW_CSS,
+  ORIGIN_DISPLAY_ATTRIBUTE,
 } from "./dom";
-import {
-  getLevelFromClassName,
-  getLevelRowClassName,
-  checkIsTreeTable,
-  fixDomInfoByDirection,
-} from "./utils";
+import { fixDomInfoByDirection, MappingOberver } from "./utils";
 
 export const DOM_MAPPING_NAME = "_mapping";
 
@@ -22,155 +17,6 @@ export const DOM_MAPPING_NAME = "_mapping";
  * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: DomInfo[], type: 'root' | 'leaf' | 'proxy' }} DomInfo
  * @typedef {Map<Element, DomInfo>} DomMapping
  */
-
-/**
- * 获取最近一个同级的
- * @param {DomInfo} domInfo
- * @param {number} [targetLevel]
- * @returns {DomInfo | null}
- */
-function getSameLevelParentDomInfo(domInfo, targetLevel = 0) {
-  const { level, parent } = domInfo;
-
-  if (level === targetLevel) {
-    return domInfo;
-  }
-
-  if (!parent) {
-    return null;
-  }
-
-  return getSameLevelParentDomInfo(parent, targetLevel);
-}
-
-/**
- * 根据类型当前的dom结构，自动构建每个tr的对应数据关系
- * 如果是树状表格，需要增加一个placeholder结构进去
- * @param {Vue} tableInstance ElTable实例
- * @param {Map<Element, DomInfo>} [mapping]
- * @returns {Map<Element, DomInfo>}
- */
-function createOrUpdateDomMapping(tableInstance, mapping = new Map()) {
-  // table的配置
-  const { data, treeProps } = tableInstance;
-  const { children } = treeProps;
-
-  mapping.clear();
-
-  /** @type {DomInfo} 最新被使用的dom, 默认是采用了整个table作为root */
-  let latestDomInfo = {
-    el: tableInstance.$el,
-    level: -1,
-    // root的data需要特殊处理，通过-1取到
-    data: [],
-    index: -1,
-    parent: null,
-    childrenList: [],
-    type: "root",
-  };
-
-  const trList = tableInstance.$el.querySelectorAll(
-    `${CONFIG.ROW.WRAPPER} > tr`
-  );
-  trList.forEach((tr, index) => {
-    try {
-      const { className, style } = tr;
-
-      /** @type {DomInfo} */
-      const domInfo = {
-        elIndex: index,
-        el: tr,
-        level: 0,
-        data,
-        index: 0,
-        parent: null,
-        childrenList: [],
-      };
-
-      /**
-       * expanded的容器行
-       * 相当于其父容器的代理
-       * 自动和最近那个操作的行绑定，因为没有明确的类名称，所以需要特殊处理
-       */
-      if (!className) {
-        if (latestDomInfo) {
-          Object.assign(domInfo, {
-            ...latestDomInfo,
-            el: tr,
-            elIndex: index,
-            type: "proxy",
-          });
-          latestDomInfo.childrenList.push(domInfo);
-        }
-        mapping.set(tr, domInfo);
-        return;
-      }
-
-      // 创建dom对应的信息
-      const level = getLevelFromClassName(tr.className);
-      domInfo.level = level;
-      /**
-       * 这里需要两个步骤，如果相差一级的话，当作是parent，
-       * 如果超过一级的话，需要回朔查找同级别的对象，以其为基准继续判定
-       */
-      const levelGap = level - latestDomInfo.level;
-      switch (levelGap) {
-        // 同级，继承
-        case 0: {
-          domInfo.index = latestDomInfo.index + 1;
-          domInfo.parent = latestDomInfo.parent;
-          domInfo.data = latestDomInfo.data;
-
-          if (domInfo.parent) {
-            domInfo.parent.childrenList.push(domInfo);
-          }
-
-          break;
-        }
-        // 之前的那个tr的下级
-        case 1: {
-          domInfo.parent = latestDomInfo;
-
-          const childrenData =
-            latestDomInfo.type === "root"
-              ? data
-              : latestDomInfo.data[latestDomInfo.index][children];
-          domInfo.data = childrenData;
-          domInfo.parent.childrenList.push(domInfo);
-          break;
-        }
-        // 正常情况，朔源最新的一个同级的
-        default: {
-          const sameLevelDomInfo = getSameLevelParentDomInfo(
-            latestDomInfo,
-            level
-          );
-          if (!sameLevelDomInfo) {
-            console.error(tr, latestDomInfo);
-            throw new Error("找不到其同级dom");
-          }
-          domInfo.index = sameLevelDomInfo.index + 1;
-          domInfo.parent = sameLevelDomInfo.parent;
-          domInfo.data = sameLevelDomInfo.data;
-          if (domInfo.parent) {
-            domInfo.parent.childrenList.push(domInfo);
-          }
-          break;
-        }
-      }
-      mapping.set(tr, domInfo);
-      latestDomInfo = domInfo;
-    } catch (e) {
-      console.error({
-        tr,
-        latestDomInfo,
-      });
-      console.error(e);
-    }
-  });
-
-  return mapping;
-}
 
 /**
  * 通知收到影响的表格
@@ -223,38 +69,16 @@ export const CONFIG = {
     OPTION(context, elTableInstance, animation) {
       const PROP = "data";
 
-      /** @type {DomMapping} 映射表 */
-      const mapping = createOrUpdateDomMapping(elTableInstance);
-
       /** 自动监听重建映射表 */
       if (elTableInstance[DOM_MAPPING_NAME]) {
         elTableInstance[DOM_MAPPING_NAME].stop();
       }
-      const observer = new MutationObserver(() => {
-        createOrUpdateDomMapping(elTableInstance, mapping);
-      });
-      const mappingOberver = {
-        mapping,
-        rebuild() {
-          createOrUpdateDomMapping(elTableInstance, mapping);
-        },
-        start: () => {
-          observer.observe(
-            elTableInstance.$el.querySelector(CONFIG.ROW.WRAPPER),
-            {
-              childList: true,
-              subtree: true,
-            }
-          );
-        },
-        stop() {
-          observer.disconnect();
-        },
-      };
+      const mappingOberver = new MappingOberver(
+        elTableInstance,
+        CONFIG.ROW.WRAPPER
+      );
       elTableInstance[DOM_MAPPING_NAME] = mappingOberver;
       mappingOberver.start();
-
-      window.HELL = mapping;
 
       return {
         onStart(evt) {
@@ -281,74 +105,13 @@ export const CONFIG = {
               // body-wrapper增加样式，让overflw可显示同时table有个透明区域可拖动
               tableEl.parentNode.classList.add(EMPTY_FIX_CSS);
             }
-
-            /**
-             * 树状表的话
-             * 1. 判断一下每一行是不是把indent给补上了，没有的自动增加
-             * @todo
-             * 2. 给每个树的行增加对应的占位
-             *    在占位部分，拖到子节点，否则拖到同级
-             */
-            if (checkIsTreeTable(draggableTable)) {
-              // 需要给每个level0的行增加一个占位
-              // const itemLevel = getLevelFromClassName(evt.item.className);
-              // // 从生成的mapping重新生成一个dom树，插入placeholder的，这样可以保证拖到不同的位置
-              // const domList = Array.from(mapping.values())
-              //   .sort((a, b) => a.elIndex - b.elIndex)
-              //   .reduce((newDomList, domInfo) => {
-              //     newDomList.push(domInfo);
-              //     /**
-              //      * 添加占位行(需要排除正在拖拽的以及其子孙)
-              //      */
-              //     const { level, el } = domInfo;
-              //     const sameLevelParentDomInfo = getSameLevelParentDomInfo(
-              //       el,
-              //       itemLevel
-              //     );
-              //     if (
-              //       sameLevelParentDomInfo &&
-              //       sameLevelParentDomInfo.el === evt.item
-              //     ) {
-              //       return newDomList;
-              //     }
-              //     // 创建一个占位，用来判断是拖动到同级还是子级
-              //     const placeholderEl = document.createElement("tr");
-              //     placeholderEl.style.width = `${domInfo.el.offsetWidth}px`;
-              //     placeholderEl.classList.add(
-              //       getLevelRowClassName(level + 1),
-              //       CONFIG.ROW.DRAGGABLE,
-              //       TREE_PLACEHOLDER_ROW_CSS
-              //     );
-              //     /** @type {DomInfo} */
-              //     const placeholderDomInfo = {
-              //       el: placeholderEl,
-              //       elIndex: 0,
-              //       type: "leaf",
-              //       level: level + 1,
-              //       data: [],
-              //       index: domInfo.childrenList.length,
-              //       parent: domInfo,
-              //       childrenList: [],
-              //     };
-              //     newDomList.push(placeholderDomInfo);
-              //     dom.insertAfter(placeholderDomInfo.el, domInfo.el);
-              //     return newDomList;
-              //   }, [])
-              //   // 刷新elIndex
-              //   .map((item, index) => {
-              //     return {
-              //       ...item,
-              //       elIndex: index,
-              //     };
-              //   });
-            }
           }
 
           /**
            * expanded/树表格的处理, 关闭展开行
            */
           const { item } = evt;
-          const domInfo = mapping.get(item);
+          const domInfo = mappingOberver.mapping.get(item);
           // 收起拖动的行的已展开行
           dom.toggleExpansion(domInfo, false);
         },
@@ -457,6 +220,13 @@ export const CONFIG = {
           document.querySelectorAll(`.${CUSTOMER_INDENT_CSS}`).forEach((el) => {
             dom.remove(el);
           });
+
+          // 移除临时缓存的的属性
+          document
+            .querySelectorAll(`[${ORIGIN_DISPLAY_ATTRIBUTE}]`)
+            .forEach((el) => {
+              el.removeAttribute(ORIGIN_DISPLAY_ATTRIBUTE);
+            });
           /**
            * 全局重新开始监听dom变化
            * 需要在之前dom操作完成之后进行
