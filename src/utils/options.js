@@ -11,7 +11,7 @@ import {
   getLevelFromClassName,
   getLevelRowClassName,
   checkIsTreeTable,
-  fixeDomInfoByDirection,
+  fixDomInfoByDirection,
 } from "./utils";
 
 export const DOM_MAPPING_NAME = "_mapping";
@@ -45,6 +45,7 @@ function getSameLevelParentDomInfo(domInfo, targetLevel = 0) {
 
 /**
  * 根据类型当前的dom结构，自动构建每个tr的对应数据关系
+ * 如果是树状表格，需要增加一个placeholder结构进去
  * @param {Vue} tableInstance ElTable实例
  * @param {Map<Element, DomInfo>} [mapping]
  * @returns {Map<Element, DomInfo>}
@@ -378,7 +379,7 @@ export const CONFIG = {
           /**
            * 判断是否需要修正当前dragged的对应level
            */
-          const targrtDomInfo = fixeDomInfoByDirection(
+          const targrtDomInfo = fixDomInfoByDirection(
             relatedDomInfo,
             draggedDomInfo,
             willInsertAfter
@@ -404,7 +405,7 @@ export const CONFIG = {
           const toDomInfoList = Array.from(
             toContext[DOM_MAPPING_NAME].mapping.values()
           );
-          const toDomInfo = fixeDomInfoByDirection(
+          const toDomInfo = fixDomInfoByDirection(
             toDomInfoList.find((domInfo) => domInfo.elIndex === newIndex),
             fromDomInfo,
             newIndex > oldIndex
