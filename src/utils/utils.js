@@ -1,4 +1,3 @@
-import { isVisible } from "./dom";
 const LEVEL_REGEXP = /--level-(\d+)/;
 /**
  * 根据行名称获取当前的层级
@@ -29,6 +28,15 @@ export function checkIsTreeTable(tableInstance) {
 }
 
 /**
+ * 判断是否可见
+ * @param {Element} el
+ * @returns {boolean}
+ */
+export function isVisible(el) {
+  return window.getComputedStyle(el).display !== "none";
+}
+
+/**
  * 根据方向矫正domInfo
  * 因为多级结构的问题，跨层级需要进行一个修正
  * 例如1，2，3结构，如果2有2-1的话，拖动到2的情况下
@@ -39,11 +47,7 @@ export function checkIsTreeTable(tableInstance) {
  * @param {boolean} willInsertAfter
  * @returns {import('./options').DomInfo}
  */
-export function fixeDomInfoByDirection(
-  domInfo,
-  originDomInfo,
-  willInsertAfter
-) {
+export function fixDomInfoByDirection(domInfo, originDomInfo, willInsertAfter) {
   if (!willInsertAfter) {
     return domInfo;
   }
@@ -82,5 +86,5 @@ export default {
   getLevelFromClassName,
   getLevelRowClassName,
   checkIsTreeTable,
-  fixeDomInfoByDirection,
+  fixDomInfoByDirection,
 };
