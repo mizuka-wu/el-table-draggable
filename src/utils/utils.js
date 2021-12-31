@@ -1,23 +1,4 @@
-const LEVEL_REGEXP = /--level-(\d+)/;
-/**
- * 根据行名称获取当前的层级
- * @param {string} className
- * @return {number}
- */
-export function getLevelFromClassName(className) {
-  const level = (LEVEL_REGEXP.exec(className) || [])[1] || 0;
-  return +(level || 0);
-}
-
-/**
- * 获取class
- * @param {number} level
- * @returns {string}
- */
-export function getLevelRowClassName(level) {
-  return `el-table__row--level-${level}`;
-}
-
+import { getLevelFromClassName, remove, insertAfter } from "./dom";
 /**
  * 判断当前表格是否已经树状展开了
  * @param {Vue} tableInstance
@@ -122,6 +103,21 @@ export function createOrUpdateDomMapping(
   const { children } = treeProps;
   mapping.clear();
   observer && observer.stop(); // 停止监听变化，构建完成后继续监听
+  const PLACEHOLDER_CSS = "dominfo-placeholder";
+  const wrapperEl = tableInstance.$el.querySelector(wrapper);
+
+  /**
+   * 移除占位用的
+   */
+  const isTree = checkIsTreeTable(tableInstance);
+  if (isTree) {
+    const placeholderList = tableInstance.$el.querySelectorAll(
+      `.${PLACEHOLDER_CSS}`
+    );
+    placeholderList.forEach((item) => {
+      remove(item);
+    });
+  }
 
   /** @type {DomInfo} 最新被使用的dom, 默认是采用了整个table作为root */
   let latestDomInfo = {
@@ -135,7 +131,7 @@ export function createOrUpdateDomMapping(
     type: "root",
   };
 
-  const trList = tableInstance.$el.querySelectorAll(`${wrapper} > tr`);
+  const trList = wrapperEl.querySelectorAll("tr");
   trList.forEach((tr, index) => {
     try {
       const { className } = tr;
@@ -233,6 +229,27 @@ export function createOrUpdateDomMapping(
     }
   });
 
+  /**
+   * 给每个行增加占位行
+   */
+  // if (isTree) {
+  //   Array.from(mapping.values()).forEach((domInfo) => {
+  //     const el = domInfo.el.cloneNode(true);
+  //     el.classList.add(PLACEHOLDER_CSS, "el-table__row");
+
+  //     // 添加一个子级的代理(放在自己子级的最后一个)
+  //     const reference = (
+  //       domInfo.childrenList[domInfo.childrenList.length - 1] || domInfo
+  //     ).el;
+  //     insertAfter(el, reference);
+  //     domInfo.childrenList.push({
+  //       ...domInfo,
+  //       el,
+  //     });
+  //   });
+  //   // 每个tr自动重新设定自己的elIndex
+  // }
+
   observer && observer.start();
   return mapping;
 }
@@ -278,8 +295,6 @@ export class MappingOberver {
 }
 
 export default {
-  getLevelFromClassName,
-  getLevelRowClassName,
   checkIsTreeTable,
   fixDomInfoByDirection,
 };

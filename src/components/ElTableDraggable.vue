@@ -156,11 +156,14 @@
   };
 </script>
 <style>
-  .el-table-draggable__tree-placeholder-row {
+  .dominfo-placeholder {
     height: 30px;
     background: #000 !important;
-    display: block;
-    width: 100%;
+  }
+
+  .dominfo-placeholder:hover {
+    background: #000;
+    z-index: 99;
   }
 
   .el-table-draggable__empty-table {
