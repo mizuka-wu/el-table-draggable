@@ -69,7 +69,9 @@ export const CONFIG = {
     OPTION(context, elTableInstance, animation) {
       const PROP = "data";
 
-      /** 自动监听重建映射表 */
+      /**
+       * 自动监听重建映射表
+       */
       if (elTableInstance[DOM_MAPPING_NAME]) {
         elTableInstance[DOM_MAPPING_NAME].stop();
       }
@@ -78,6 +80,7 @@ export const CONFIG = {
         CONFIG.ROW.WRAPPER
       );
       elTableInstance[DOM_MAPPING_NAME] = mappingOberver;
+      mappingOberver.rebuild();
       mappingOberver.start();
 
       return {

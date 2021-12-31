@@ -1,22 +1,39 @@
 /* eslint-disable no-unused-vars */
 import throttle from "lodash/throttle";
 import Sortable from "sortablejs";
-import { getLevelFromClassName, getLevelRowClassName } from "./utils";
 const { utils } = Sortable;
 const { css } = utils;
 
 /** @type {Set<Element>} */
 const animatedSet = new Set();
 
+const LEVEL_REGEXP = /--level-(\d+)/;
 export const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
-export const TREE_PLACEHOLDER_ROW_CSS =
-  "el-table-draggable__tree-placeholder-row";
 export const ANIMATED_CSS = "el-table-draggable__animated";
 export const INDENT_CSS = "el-table__indent";
 export const CUSTOMER_INDENT_CSS = "el-table-draggable__indent";
 export const ORIGIN_DISPLAY_ATTRIBUTE = "data-origin-display";
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
 const elTableColumnRegexp = /el-table_\d*_column_\d*/;
+
+/**
+ * 根据行名称获取当前的层级
+ * @param {string} className
+ * @return {number}
+ */
+export function getLevelFromClassName(className) {
+  const level = (LEVEL_REGEXP.exec(className) || [])[1] || 0;
+  return +(level || 0);
+}
+
+/**
+ * 获取class
+ * @param {number} level
+ * @returns {string}
+ */
+export function getLevelRowClassName(level) {
+  return `el-table__row--level-${level}`;
+}
 
 /**
  * 修改某个dom的className
@@ -336,4 +353,6 @@ export default {
   cleanUp,
   toggleExpansion,
   changeDomInfoLevel,
+  getLevelFromClassName,
+  getLevelRowClassName,
 };
