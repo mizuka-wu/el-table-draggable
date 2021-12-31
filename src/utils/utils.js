@@ -121,15 +121,16 @@ export function createOrUpdateDomMapping(
 
   /** @type {DomInfo} 最新被使用的dom, 默认是采用了整个table作为root */
   let latestDomInfo = {
-    el: tableInstance.$el,
+    el: wrapperEl,
     level: -1,
     // root的data需要特殊处理，通过-1取到
-    data: [],
-    index: -1,
+    data,
+    index: 0,
     parent: null,
     childrenList: [],
     type: "root",
   };
+  mapping.set(wrapperEl, latestDomInfo)
 
   const trList = wrapperEl.querySelectorAll("tr");
   trList.forEach((tr, index) => {
