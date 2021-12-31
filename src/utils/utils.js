@@ -1,4 +1,4 @@
-import { getLevelFromClassName, remove, insertAfter } from "./dom";
+import { getLevelFromClassName, remove } from "./dom";
 /**
  * 判断当前表格是否已经树状展开了
  * @param {Vue} tableInstance
