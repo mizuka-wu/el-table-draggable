@@ -171,11 +171,21 @@ export const CONFIG = {
           const toDomInfoList = Array.from(
             toContext[DOM_MAPPING_NAME].mapping.values()
           );
-          const toDomInfo = fixDomInfoByDirection(
-            toDomInfoList.find((domInfo) => domInfo.elIndex === newIndex),
-            fromDomInfo,
-            newIndex > oldIndex
-          );
+          const originToDomInfo = toDomInfoList.find((domInfo) => domInfo.elIndex === newIndex) || toContext[DOM_MAPPING_NAME].mapping.get(to)
+          const toDomInfo = {
+            ...fixDomInfoByDirection(
+              originToDomInfo,
+              fromDomInfo,
+              from === to ? newIndex > oldIndex : false
+            )
+          }
+
+          // 跨表格index修正
+          if (from !== to && to.querySelectorAll(CONFIG.ROW.DRAGGABLE).length <= 2) {
+            toDomInfo.index = newIndex
+          }
+
+          console.log(toDomInfo)
 
           /**
            * 数据层面的交换
@@ -185,7 +195,7 @@ export const CONFIG = {
             fromDomInfo.index,
             fromDomInfo.parent.childrenList,
             toDomInfo.index,
-            toDomInfo.parent.childrenList,
+            toDomInfo.type === 'root' ? toDomInfo.childrenList : toDomInfo.parent.childrenList,
             pullMode
           );
 
