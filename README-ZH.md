@@ -18,6 +18,7 @@
 - 设置 handle
 - 设置 group 实现分类拖拽
 - 树状表格拖拽 （>1.2.0）
+- onMove 支持 （>1.3.0）
 - ...其他 sortable.js 的配置
 - input 事件，因为 change 事件和 sortable.js 的默认事件重复，改为 input 事件，回调为变化后的行(列)集合
 
@@ -62,6 +63,10 @@ export default {
 #### column
 
 启用列拖拽（试验性功能）0.6 增加
+
+#### onMove
+
+支持`onMove`回调
 
 #### 其他
 

@@ -12,6 +12,7 @@ Let el-table support sortable.js
 - support drag from one to another table
 - support treeTable
 - support vetur
+- support onMove
 - support drag into an empty `el-table`
 
 ### You can see in Demos
@@ -19,6 +20,7 @@ Let el-table support sortable.js
 - Drag rows
 - Drag columns(>1.1.0)
 - Drag tree(>1.2.0)
+- disable move by set onMove(>1.3.0)
 - Set handle for drag
 - Set group
 - ...other option in sortable.js
@@ -65,6 +67,10 @@ the wrapper tag of el-table, default is `div`
 #### column
 
 support drag column
+
+#### onMove
+
+set onMove callback
 
 #### other
 
