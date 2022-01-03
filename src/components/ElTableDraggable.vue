@@ -32,6 +32,9 @@
         type: Boolean,
         default: false,
       },
+      onMove: {
+        type: Function,
+      },
     },
     data() {
       return {
@@ -88,8 +91,10 @@
           ...Object.keys(sortableOptions).reduce((options, event) => {
             const eventHandler = sortableOptions[event];
             options[event] = function (...args) {
-              eventHandler(...args);
-              vm.$emit(event, ...args);
+              if (event !== "onMove") {
+                vm.$emit(event, ...args);
+              }
+              return eventHandler(...args);
             };
             return options;
           }, {}),

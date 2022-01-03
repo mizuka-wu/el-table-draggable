@@ -9,6 +9,18 @@ export function checkIsTreeTable(tableInstance) {
 }
 
 /**
+ * 获取onMove方法
+ * @param {Vue} tableInstance
+ * @returns {(evt: Sortable.MoveEvent, originalEvent: Event) => boolean | void | 1 | -1}
+ */
+export function getOnMove(tableInstance) {
+  const {
+    $props: { onMove },
+  } = tableInstance.$parent;
+  return onMove || (() => true);
+}
+
+/**
  * 判断是否可见
  * @param {Element} el
  * @returns {boolean}
@@ -130,7 +142,7 @@ export function createOrUpdateDomMapping(
     childrenList: [],
     type: "root",
   };
-  mapping.set(wrapperEl, latestDomInfo)
+  mapping.set(wrapperEl, latestDomInfo);
 
   const trList = wrapperEl.querySelectorAll("tr");
   trList.forEach((tr, index) => {
@@ -298,4 +310,5 @@ export class MappingOberver {
 export default {
   checkIsTreeTable,
   fixDomInfoByDirection,
+  getOnMove,
 };
