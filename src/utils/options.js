@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable */
 /* eslint-disable no-unused-vars */
 /**
  * 根据不同类型使用不同的option
@@ -7,7 +8,7 @@ import dom, {
   EMPTY_FIX_CSS,
   ORIGIN_DISPLAY_ATTRIBUTE,
 } from "./dom";
-import { fixDomInfoByDirection, MappingOberver } from "./utils";
+import { fixDomInfoByDirection, MappingOberver, getOnMove } from "./utils";
 
 export const DOM_MAPPING_NAME = "_mapping";
 
@@ -118,8 +119,8 @@ export const CONFIG = {
           // 收起拖动的行的已展开行
           dom.toggleExpansion(domInfo, false);
         },
-        onMove(evt) {
-          const { related, willInsertAfter, dragged, to, from } = evt;
+        onMove(evt, originEvt) {
+          const { related, dragged, to, from, willInsertAfter } = evt;
           const fromContext = context.get(from);
           const toContext = context.get(to);
           /** @type {DomInfo} */
@@ -128,6 +129,52 @@ export const CONFIG = {
           /** @type {DomInfo} */
           const relatedDomInfo =
             toContext[DOM_MAPPING_NAME].mapping.get(related);
+
+          /**
+           * 判断是否需要修正当前dragged的对应level
+           */
+          let targrtDomInfo = fixDomInfoByDirection(
+            relatedDomInfo,
+            draggedDomInfo,
+            willInsertAfter
+          );
+
+          const onMove = getOnMove(elTableInstance);
+          if (onMove) {
+            const onMoveResutl = onMove(evt, originEvt, {
+              dragged: draggedDomInfo,
+              related: targrtDomInfo,
+            });
+
+            switch (onMoveResutl) {
+              case 1: {
+                if (!willInsertAfter) {
+                  targrtDomInfo = fixDomInfoByDirection(
+                    relatedDomInfo,
+                    draggedDomInfo,
+                    true
+                  );
+                }
+                break;
+              }
+              case -1: {
+                if (willInsertAfter) {
+                  targrtDomInfo = fixDomInfoByDirection(
+                    relatedDomInfo,
+                    draggedDomInfo,
+                    false
+                  );
+                }
+                break;
+              }
+              case false: {
+                return false;
+              }
+              default: {
+                break;
+              }
+            }
+          }
 
           /**
            * relatedDomInfo，自动将children插入到自身后方
@@ -142,14 +189,6 @@ export const CONFIG = {
             });
           });
 
-          /**
-           * 判断是否需要修正当前dragged的对应level
-           */
-          const targrtDomInfo = fixDomInfoByDirection(
-            relatedDomInfo,
-            draggedDomInfo,
-            willInsertAfter
-          );
           const {
             states: { indent },
           } = fromContext.store;
@@ -171,21 +210,24 @@ export const CONFIG = {
           const toDomInfoList = Array.from(
             toContext[DOM_MAPPING_NAME].mapping.values()
           );
-          const originToDomInfo = toDomInfoList.find((domInfo) => domInfo.elIndex === newIndex) || toContext[DOM_MAPPING_NAME].mapping.get(to)
+          const originToDomInfo =
+            toDomInfoList.find((domInfo) => domInfo.elIndex === newIndex) ||
+            toContext[DOM_MAPPING_NAME].mapping.get(to);
           const toDomInfo = {
             ...fixDomInfoByDirection(
               originToDomInfo,
               fromDomInfo,
               from === to ? newIndex > oldIndex : false
-            )
-          }
+            ),
+          };
 
           // 跨表格index修正
-          if (from !== to && to.querySelectorAll(CONFIG.ROW.DRAGGABLE).length <= 2) {
-            toDomInfo.index = newIndex
+          if (
+            from !== to &&
+            to.querySelectorAll(CONFIG.ROW.DRAGGABLE).length <= 2
+          ) {
+            toDomInfo.index = newIndex;
           }
-
-          console.log(toDomInfo)
 
           /**
            * 数据层面的交换
@@ -195,7 +237,9 @@ export const CONFIG = {
             fromDomInfo.index,
             fromDomInfo.parent.childrenList,
             toDomInfo.index,
-            toDomInfo.type === 'root' ? toDomInfo.childrenList : toDomInfo.parent.childrenList,
+            toDomInfo.type === "root"
+              ? toDomInfo.childrenList
+              : toDomInfo.parent.childrenList,
             pullMode
           );
 
@@ -296,8 +340,27 @@ export const CONFIG = {
           });
         },
         onMove(evt) {
-          const { related, willInsertAfter, dragged } = evt;
+          const { related, dragged } = evt;
+          let { willInsertAfter } = evt;
+
           dom.alignmentTableByThList(Array.from(dragged.parentNode.childNodes));
+
+          // 根据用户选择
+          const onMoveResutl = getOnMove(elTableInstance);
+          switch (onMoveResutl) {
+            case 1: {
+              willInsertAfter = true;
+              break;
+            }
+            case -1: {
+              willInsertAfter = false;
+              break;
+            }
+            case false: {
+              return false;
+            }
+          }
+
           // 需要交换两列所有的td
           const thList = [dragged, related];
           const [fromTdList, toTdList] = (
