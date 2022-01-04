@@ -359,6 +359,9 @@ export const CONFIG = {
             case false: {
               return false;
             }
+            default: {
+              break;
+            }
           }
 
           // 需要交换两列所有的td
@@ -372,6 +375,7 @@ export const CONFIG = {
             // 交换td位置
             dom.exchange(fromTd, toTd, animation);
           });
+          return true;
         },
         onEnd(evt) {
           const PROP = "columns";
