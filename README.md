@@ -71,6 +71,24 @@ support drag column
 #### onMove
 
 set onMove callback
+```javascript
+onMove: function (/**Event*/evt, /**Event*/originalEvent, domInfo) {
+   // Example: https://jsbin.com/nawahef/edit?js,output
+   evt.dragged; // dragged HTMLElement
+   evt.draggedRect; // DOMRect {left, top, right, bottom}
+   evt.related; // HTMLElement on which have guided
+   evt.relatedRect; // DOMRect
+   evt.willInsertAfter; // Boolean that is true if Sortable will insert drag element after target by default
+   originalEvent.clientY; // mouse position
+   
+   domInfo.dragged // the origin dom info of dragged tr, like parent domInfo, level, data, and it's index
+   domInfo.related // like dragged
+   
+   // return false; — for cancel
+   // return -1; — insert before target
+   // return 1; — insert after target
+},
+```
 
 #### other
 
