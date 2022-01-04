@@ -67,6 +67,24 @@ export default {
 #### onMove
 
 支持`onMove`回调
+```javascript
+onMove: function (/**Event*/evt, /**Event*/originalEvent, domInfo) {
+   // Example: https://jsbin.com/nawahef/edit?js,output
+   evt.dragged; // dragged HTMLElement
+   evt.draggedRect; // DOMRect {left, top, right, bottom}
+   evt.related; // HTMLElement on which have guided
+   evt.relatedRect; // DOMRect
+   evt.willInsertAfter; // Boolean that is true if Sortable will insert drag element after target by default
+   originalEvent.clientY; // mouse position
+   
+   domInfo.dragged // 拖拽的行的基本信息，包含其所属data，dataindex，parent是哪个domInfo
+   domInfo.related // 根据算法算出来的对应dom，树状表格下可能和屏幕上显示的dom不一致
+   
+   // return false; — for cancel
+   // return -1; — insert before target
+   // return 1; — insert after target
+},
+```
 
 #### 其他
 
