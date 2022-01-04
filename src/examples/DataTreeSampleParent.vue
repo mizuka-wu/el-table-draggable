@@ -32,16 +32,37 @@
             })),
           })),
         })),
-        code: `<ElTableDraggable>
-    <el-table row-key="必填" :data="list">
+        code: `
+        <template>
+        <ElTableDraggable>
+    <el-table row-key="必填" :data="list" :onMove="oMove">
     </el-table>
-</ElTableDraggable>`,
+</ElTableDraggable>
+</template>
+<script>
+export default {
+  methods: {
+        onMove(evt, originEvt, { dragged, related }) {
+        if (dragged.level !== 2) {
+          return false;
+        }
+
+        if (dragged.parent === related.parent) {
+          return true;
+        }
+
+        return false;
+      },
+  }
+}
+</script>
+`,
       };
     },
     methods: {
       onMove(evt, originEvt, { dragged, related }) {
         if (dragged.level !== 2) {
-          return;
+          return false;
         }
 
         if (dragged.parent === related.parent) {
