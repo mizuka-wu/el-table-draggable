@@ -6,7 +6,6 @@
 import dom, {
   CUSTOMER_INDENT_CSS,
   EMPTY_FIX_CSS,
-  ORIGIN_DISPLAY_ATTRIBUTE,
   PLACEHOLDER_CSS,
 } from "./dom";
 import {
@@ -19,9 +18,21 @@ import {
 export const DOM_MAPPING_NAME = "_mapping";
 
 /**
+ * @typedef DomInfo Dom对应的信息
+ * @property {Element} el 
+ * @property {number} elIndex
+ * @property {number} level
+ * @property {any[]} data
+ * @property {number} index
+ * @property {DomInfo|null} parent
+ * @property {DomInfo[]} childrenList
+ * @property {boolean} isShow
+ * @property {'root' | 'leaf' | 'proxy' | undefined} type
+ */
+
+/**
  * Dom映射表
  * el=>对应的data数据
- * @typedef {{ el:Element, elIndex: number, level: number, data: any[],index: number, parent: DomInfo | null, childrenList: DomInfo[], type: 'root' | 'leaf' | 'proxy' }} DomInfo
  * @typedef {Map<Element, DomInfo>} DomMapping
  */
 
@@ -95,7 +106,7 @@ export const CONFIG = {
            * 开始之前对所有表格做一定处理
            */
           for (const draggableTable of context.values()) {
-            const isTreeTable = checkIsTreeTable(draggableTable);
+            // const isTreeTable = checkIsTreeTable(draggableTable);
             const domMapping = draggableTable[DOM_MAPPING_NAME];
             // 暂停dom监听，防止拖拽变化不停触发
             if (domMapping) {
@@ -343,12 +354,6 @@ export const CONFIG = {
           //     dom.remove(placeholderEl);
           // });
 
-          // 移除临时缓存的的属性
-          document
-            .querySelectorAll(`[${ORIGIN_DISPLAY_ATTRIBUTE}]`)
-            .forEach((el) => {
-              el.removeAttribute(ORIGIN_DISPLAY_ATTRIBUTE);
-            });
           /**
            * 全局重新开始监听dom变化
            * 需要在之前dom操作完成之后进行

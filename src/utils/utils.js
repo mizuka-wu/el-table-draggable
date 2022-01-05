@@ -118,13 +118,15 @@ export function createOrUpdateDomMapping(
     parent: null,
     childrenList: [],
     type: "root",
+    isShow: true
   };
   mapping.set(wrapperEl, latestDomInfo);
 
   const trList = wrapperEl.querySelectorAll("tr");
   trList.forEach((tr, index) => {
     try {
-      const { className } = tr;
+      const { className, style } = tr;
+      const isShow = style.display === 'none' ? false : true
 
       /** @type {DomInfo} */
       const domInfo = {
@@ -135,6 +137,7 @@ export function createOrUpdateDomMapping(
         index: 0,
         parent: null,
         childrenList: [],
+        isShow
       };
 
       /**
@@ -255,6 +258,8 @@ export class MappingOberver {
       {
         childList: true,
         subtree: true,
+        attributes: true,
+        attributeFilter: ['style']
       }
     );
   }
