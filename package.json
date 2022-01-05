@@ -1,7 +1,7 @@
 {
   "name": "el-table-draggable",
   "description": "make el-table draggable, support row, column, expanded, sortable.js",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": {
     "name": "mizuka",
     "email": "mizuka.wu@outlook.com",
