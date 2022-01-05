@@ -12,7 +12,6 @@ export const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
 export const ANIMATED_CSS = "el-table-draggable__animated";
 export const INDENT_CSS = "el-table__indent";
 export const CUSTOMER_INDENT_CSS = "el-table-draggable__indent";
-export const ORIGIN_DISPLAY_ATTRIBUTE = "data-origin-display";
 export const PLACEHOLDER_CSS = 'dominfo-placeholder'
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
 const elTableColumnRegexp = /el-table_\d*_column_\d*/;
@@ -289,15 +288,11 @@ export function toggleExpansion(domInfo, expanded = true) {
       if (expanded) {
         // 展开的话，需要显示，并修正位置和indent
         const originDisplay =
-          childrenDomInfo.el.getAttribute(ORIGIN_DISPLAY_ATTRIBUTE) || null;
+          childrenDomInfo.isShow ? null : childrenDomInfo.el.style.display;
         childrenDomInfo.el.style.display = originDisplay;
         insertAfter(childrenDomInfo.el, domInfo.el);
         changeDomInfoLevel(childrenDomInfo, childrenDomInfo.level);
       } else {
-        childrenDomInfo.el.setAttribute(
-          ORIGIN_DISPLAY_ATTRIBUTE,
-          childrenDomInfo.el.style.display
-        );
         childrenDomInfo.el.style.display = "none";
       }
 
