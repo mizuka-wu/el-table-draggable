@@ -13,6 +13,7 @@ export const ANIMATED_CSS = "el-table-draggable__animated";
 export const INDENT_CSS = "el-table__indent";
 export const CUSTOMER_INDENT_CSS = "el-table-draggable__indent";
 export const ORIGIN_DISPLAY_ATTRIBUTE = "data-origin-display";
+export const PLACEHOLDER_CSS = 'dominfo-placeholder'
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
 const elTableColumnRegexp = /el-table_\d*_column_\d*/;
 
