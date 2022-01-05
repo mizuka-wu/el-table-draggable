@@ -162,13 +162,9 @@
 </script>
 <style>
   .dominfo-placeholder {
-    height: 30px;
-    background: #000 !important;
-  }
-
-  .dominfo-placeholder:hover {
-    background: #000;
-    z-index: 99;
+    height: 5px;
+    display: block;
+    overflow: hidden;
   }
 
   .el-table-draggable__empty-table {

@@ -1,4 +1,4 @@
-import { getLevelFromClassName, remove } from "./dom";
+import { getLevelFromClassName } from "./dom";
 /**
  * 判断当前表格是否已经树状展开了
  * @param {Vue} tableInstance
@@ -52,24 +52,15 @@ export function fixDomInfoByDirection(domInfo, originDomInfo, willInsertAfter) {
   }
   // 子节点上
   else if (domInfo.level > 0) {
-    const { index, parent } = domInfo;
+    const { index } = domInfo;
     const { childrenList } = domInfo.parent;
-
-    // 父亲节点的代理，因为是向下拖拽，实际上的index应该+1
-    const parentDomInfoProxy = {
-      ...parent,
-      index: parent.index + 1,
-    };
 
     // 如果是跨数据层面拖拽，同样需要+1
     const offset = childrenList.includes(originDomInfo) ? 0 : 1;
-    const list = [
-      ...childrenList.slice(0, childrenList.length - 1).map((item) => ({
-        ...item,
-        index: item.index + offset,
-      })),
-      parentDomInfoProxy,
-    ];
+    const list = childrenList.slice(0).map((item) => ({
+      ...item,
+      index: item.index + offset,
+    }));
     return list[index];
   }
   return domInfo;
@@ -115,21 +106,7 @@ export function createOrUpdateDomMapping(
   const { children } = treeProps;
   mapping.clear();
   observer && observer.stop(); // 停止监听变化，构建完成后继续监听
-  const PLACEHOLDER_CSS = "dominfo-placeholder";
   const wrapperEl = tableInstance.$el.querySelector(wrapper);
-
-  /**
-   * 移除占位用的
-   */
-  const isTree = checkIsTreeTable(tableInstance);
-  if (isTree) {
-    const placeholderList = tableInstance.$el.querySelectorAll(
-      `.${PLACEHOLDER_CSS}`
-    );
-    placeholderList.forEach((item) => {
-      remove(item);
-    });
-  }
 
   /** @type {DomInfo} 最新被使用的dom, 默认是采用了整个table作为root */
   let latestDomInfo = {
@@ -241,27 +218,6 @@ export function createOrUpdateDomMapping(
       console.error(e);
     }
   });
-
-  /**
-   * 给每个行增加占位行
-   */
-  // if (isTree) {
-  //   Array.from(mapping.values()).forEach((domInfo) => {
-  //     const el = domInfo.el.cloneNode(true);
-  //     el.classList.add(PLACEHOLDER_CSS, "el-table__row");
-
-  //     // 添加一个子级的代理(放在自己子级的最后一个)
-  //     const reference = (
-  //       domInfo.childrenList[domInfo.childrenList.length - 1] || domInfo
-  //     ).el;
-  //     insertAfter(el, reference);
-  //     domInfo.childrenList.push({
-  //       ...domInfo,
-  //       el,
-  //     });
-  //   });
-  //   // 每个tr自动重新设定自己的elIndex
-  // }
 
   observer && observer.start();
   return mapping;

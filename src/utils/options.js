@@ -7,8 +7,14 @@ import dom, {
   CUSTOMER_INDENT_CSS,
   EMPTY_FIX_CSS,
   ORIGIN_DISPLAY_ATTRIBUTE,
+  PLACEHOLDER_CSS,
 } from "./dom";
-import { fixDomInfoByDirection, MappingOberver, getOnMove } from "./utils";
+import {
+  fixDomInfoByDirection,
+  MappingOberver,
+  getOnMove,
+  checkIsTreeTable,
+} from "./utils";
 
 export const DOM_MAPPING_NAME = "_mapping";
 
@@ -68,8 +74,7 @@ export const CONFIG = {
      * @returns {import('@types/sortablejs').SortableOptions}
      */
     OPTION(context, elTableInstance, animation) {
-      const PROP = "data";
-
+      const PROP = 'data'
       /**
        * 自动监听重建映射表
        */
@@ -90,9 +95,12 @@ export const CONFIG = {
            * 开始之前对所有表格做一定处理
            */
           for (const draggableTable of context.values()) {
+            const isTreeTable = checkIsTreeTable(draggableTable);
+            const domMapping = draggableTable[DOM_MAPPING_NAME];
             // 暂停dom监听，防止拖拽变化不停触发
-            draggableTable[DOM_MAPPING_NAME] &&
-              draggableTable[DOM_MAPPING_NAME].stop();
+            if (domMapping) {
+              domMapping.stop();
+            }
 
             /**
              * 解决手动关闭后会有的错位问题
@@ -109,6 +117,56 @@ export const CONFIG = {
               // body-wrapper增加样式，让overflw可显示同时table有个透明区域可拖动
               tableEl.parentNode.classList.add(EMPTY_FIX_CSS);
             }
+
+            /**
+             * 增加自身子列的占位行
+             */
+            // if (isTreeTable && domMapping) {
+            //   const { treeProps } = draggableTable;
+            //   const { children } = treeProps;
+            //   /** @type {{ mapping: DomMapping }} */
+            //   const { mapping } = domMapping
+            //   const trList = Array.from(mapping.values()).filter(({ type = 'leaf' }) => type === 'leaf')
+            //   trList.forEach(domInfo => {
+            //     const { level, childrenList, el, data, index } = domInfo
+            //     const childrenData = data[index][children]
+            //     if (childrenData) {
+            //       const childrenProxyEl = el.cloneNode()
+            //       childrenProxyEl.classList.add(PLACEHOLDER_CSS)
+            //       childrenProxyEl.style.width = el.offsetWidth + 'px'
+            //       /** @type {DomInfo} */
+            //       const proxyDomInfo = {
+            //         el: childrenProxyEl,
+            //         elIndex: -1,
+            //         level: level + 1,
+            //         data: childrenData,
+            //         index: 0,
+            //         type: 'proxy',
+            //         parent: domInfo,
+            //         childrenList: []
+            //       }
+                  
+            //       let referenceEl = el
+            //       if (childrenList.length) {
+            //         referenceEl = childrenList[childrenList.length - 1].el
+            //         proxyDomInfo.index = childrenList.length
+            //       }
+            //       childrenList.push(proxyDomInfo) // 数据层面
+            //       dom.insertAfter(childrenProxyEl, referenceEl) // dom层面增加
+            //       mapping.set(childrenProxyEl, proxyDomInfo)
+            //     }
+            //   })
+            //   // 修正所有tr的elIndex
+            //   const trWithProxyTrList = draggableTable.$el.querySelectorAll(
+            //     `${CONFIG.ROW.WRAPPER} tr`
+            //   )
+            //   trWithProxyTrList.forEach((tr, index) => {
+            //     const domInfo = mapping.get(tr)
+            //     if (domInfo) {
+            //       domInfo.elIndex = index
+            //     }
+            //   })
+            // }
           }
 
           /**
@@ -277,6 +335,13 @@ export const CONFIG = {
           document.querySelectorAll(`.${CUSTOMER_INDENT_CSS}`).forEach((el) => {
             dom.remove(el);
           });
+
+          // // 移除占位的行
+          // document
+          //   .querySelectorAll(`.${PLACEHOLDER_CSS}`)
+          //   .forEach((placeholderEl) => {
+          //     dom.remove(placeholderEl);
+          // });
 
           // 移除临时缓存的的属性
           document
