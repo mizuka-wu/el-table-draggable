@@ -434,8 +434,11 @@ export const CONFIG = {
             }
           }
 
-          // 需要交换两列所有的td
+          /**
+           * 对dom进行操作
+           */
           const thList = [dragged, related];
+          // 需要交换两列所有的td
           const [fromTdList, toTdList] = (
             willInsertAfter ? thList : thList.reverse()
           ).map((th) => dom.getTdListByTh(th));
@@ -445,6 +448,7 @@ export const CONFIG = {
             // 交换td位置
             dom.exchange(fromTd, toTd, animation);
           });
+
           return true;
         },
         onEnd(evt) {

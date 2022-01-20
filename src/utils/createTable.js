@@ -2,7 +2,8 @@ import Mock from "mockjs"
 export const columns = [
     {
         key: "index",
-        type: "number"
+        type: "number",
+        width: 100,
     },
     {
         key: "id",
