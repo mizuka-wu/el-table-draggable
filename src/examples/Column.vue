@@ -1,11 +1,12 @@
 <template>
   <div>
     <ElTableDraggable v-on="$listeners" column v-model="columns">
-      <el-table :data="list" row-key="id">
+      <el-table border :data="list" row-key="id">
         <el-table-column
           :key="column.key"
           :label="column.key"
           :prop="column.key"
+          :width="column.width"
           v-for="column of columns"
         ></el-table-column>
       </el-table>
@@ -16,9 +17,9 @@
 </template>
 
 <script>
-export const name = "列拖拽"
-export const nameEn = 'Drag Column'
-import { createData, columns } from '../utils/createTable'
+export const name = "列拖拽";
+export const nameEn = "Drag Column";
+import { createData, columns } from "../utils/createTable";
 export default {
   data() {
     return {
@@ -27,8 +28,8 @@ export default {
       code: `<ElTableDraggable column>
     <el-table row-key="必填" :data="list">
     </el-table>
-</ElTableDraggable>`
-    }
-  }
-}
+</ElTableDraggable>`,
+    };
+  },
+};
 </script>

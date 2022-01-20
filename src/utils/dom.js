@@ -80,7 +80,7 @@ function resetTransform(el) {
  * 获取原始的boundge位置
  * @param {Element} el
  * @param {boolean} ignoreTranslate
- * @returns {{x: number, y: number}}
+ * @returns {DOMRect}
  */
 export function getDomPosition(el, ignoreTranslate = true) {
   const position = el.getBoundingClientRect().toJSON();
@@ -152,7 +152,7 @@ export function getTransform(el, target) {
 export function translateTo(el, target) {
   resetTransform(el);
   const transform = getTransform(el, target);
-  el.style.transform = transform;
+  addAnimate(el, transform)
 }
 
 /**
@@ -231,6 +231,14 @@ export function exchange(prevNode, nextNode, animate = 0) {
   ];
   exchangeList.forEach(({ from, to }) => {
     const targetPosition = getDomPosition(to, false);
+    
+    // 宽度需要修正
+    const { width } = getDomPosition(from, false)
+    const targetWidth = targetPosition.width
+    if (width !== targetWidth) {
+      const offset = width - targetWidth
+      targetPosition.x = targetPosition.x + offset
+    }
     const transform = getTransform(from, targetPosition);
     addAnimate(from, transform, animate);
   });
@@ -253,7 +261,20 @@ export function getTdListByTh(th) {
   const className = Array.from(th.classList).find((className) =>
     elTableColumnRegexp.test(className)
   );
-  return document.querySelectorAll(`.${className}`);
+  return document.querySelectorAll(`td.${className}`);
+}
+
+/**
+ * 从th获取对应的col
+ * @todo 支持跨表格获取tds
+ * @param {Element} th
+ * @returns {Element}
+ */
+ export function getColByTh(th) {
+  const className = Array.from(th.classList).find((className) =>
+    elTableColumnRegexp.test(className)
+  );
+  return document.querySelector(`[name=${className}]`);
 }
 
 /**
@@ -272,7 +293,7 @@ export const alignmentTableByThList = throttle(function alignmentTableByThList(
     });
   });
 },
-1000 / 60);
+1000 / 120);
 
 /**
  * 切换row的打开还是关闭
@@ -351,4 +372,5 @@ export default {
   changeDomInfoLevel,
   getLevelFromClassName,
   getLevelRowClassName,
+  getColByTh
 };
