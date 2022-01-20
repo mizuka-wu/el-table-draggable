@@ -40,10 +40,10 @@ export function isVisible(el) {
  * @param {boolean} willInsertAfter
  * @returns {import('./options').DomInfo}
  */
-export function fixDomInfoByDirection(domInfo, originDomInfo, willInsertAfter) {
-  if (!willInsertAfter) {
-    return domInfo;
-  }
+export function fixDomInfoByDirection(domInfo, originDomInfo) {
+  // if (!willInsertAfter) {
+  //   return domInfo;
+  // }
   const { childrenList } = domInfo;
   const visibleChildrenList = childrenList.filter((item) => isVisible(item.el));
   // 某个行的根节点上
