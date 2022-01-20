@@ -381,7 +381,30 @@ export const CONFIG = {
      * @returns {import('@types/sortablejs').SortableOptions}
      */
     OPTION(context, elTableInstance, animation) {
+      let isDragging = false
+      // 自动对齐
+      function autoAlignmentTableByThList(thList) {
+        if (!isDragging) {
+          return
+        }
+        dom.alignmentTableByThList(thList)
+        return requestAnimationFrame(() => {
+          autoAlignmentTableByThList(thList)
+        })
+      }
+
       return {
+        onStart() {
+          const colList = document.querySelectorAll(".el-table__header-wrapper colgroup col")
+          colList.forEach(item => {
+            item.setAttribute('data-origin-width', item.getAttribute('width'))
+          })
+          isDragging = true
+
+          // 自动对齐
+          const thList = document.querySelector(CONFIG.COLUMN.WRAPPER).childNodes
+          autoAlignmentTableByThList(Array.from(thList))
+        },
         setData(dataTransfer, dragEl) {
           /**
            * 在页面上创建一个当前table的wrapper，然后隐藏它，只显示那一列的部分作为拖拽对象
@@ -409,15 +432,14 @@ export const CONFIG = {
             document.body.removeChild(wrapper);
           });
         },
-        onMove(evt) {
-          const { related, dragged } = evt;
+        onMove(evt, originEvent) {
+          const { related, dragged, relatedRect, draggedRect } = evt;
           let { willInsertAfter } = evt;
 
-          dom.alignmentTableByThList(Array.from(dragged.parentNode.childNodes));
-
           // 根据用户选择
-          const onMoveResutl = getOnMove(elTableInstance);
-          switch (onMoveResutl) {
+          const onMove = getOnMove(elTableInstance);
+          const onMoveResult = onMove(evt, originEvent)
+          switch (onMoveResult) {
             case 1: {
               willInsertAfter = true;
               break;
@@ -434,23 +456,34 @@ export const CONFIG = {
             }
           }
 
-          // 需要交换两列所有的td
+          /**
+           * 对dom进行操作
+           */
           const thList = [dragged, related];
-          const [fromTdList, toTdList] = (
-            willInsertAfter ? thList : thList.reverse()
-          ).map((th) => dom.getTdListByTh(th));
+          // 临时修改两个的宽度, 需要在下个循环触发，省的宽度不一致导致因为dom变化再次触发拖拽
+          setTimeout(() => {
+            const colList = thList.map(th => dom.getColByTh(th))
+            // 交换宽度
+            const [fromWidth, toWidth] = colList.map(col => col.getAttribute("width"))
+            const [fromCol, toCol] = colList
+            fromCol.setAttribute("width", toWidth)
+            toCol.setAttribute("width", fromWidth)
+          })
 
-          fromTdList.forEach((fromTd, index) => {
-            const toTd = toTdList[index];
-            // 交换td位置
-            dom.exchange(fromTd, toTd, animation);
-          });
           return true;
         },
         onEnd(evt) {
           const PROP = "columns";
-          // 会交换value的值，达成v-model
           dom.cleanUp();
+          // 清除所有临时交换产生的设定和变量
+          document.querySelectorAll("[data-origin-width]")
+          .forEach(item => {
+            item.setAttribute("width", item.getAttribute("data-origin-width"))
+            item.removeAttribute("data-origin-width")
+          })
+
+          isDragging = false
+
           const { to, from, pullMode } = evt;
           const toContext = context.get(to);
           let toList = toContext[PROP];
