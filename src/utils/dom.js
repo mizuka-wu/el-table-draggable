@@ -152,7 +152,7 @@ export function getTransform(el, target) {
 export function translateTo(el, target) {
   resetTransform(el);
   const transform = getTransform(el, target);
-  el.style.transform = transform;
+  addAnimate(el, transform)
 }
 
 /**
