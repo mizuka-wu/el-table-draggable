@@ -432,13 +432,14 @@ export const CONFIG = {
             document.body.removeChild(wrapper);
           });
         },
-        onMove(evt) {
-          const { related, dragged } = evt;
+        onMove(evt, originEvent) {
+          const { related, dragged, relatedRect, draggedRect } = evt;
           let { willInsertAfter } = evt;
 
           // 根据用户选择
-          const onMoveResutl = getOnMove(elTableInstance);
-          switch (onMoveResutl) {
+          const onMove = getOnMove(elTableInstance);
+          const onMoveResult = onMove(evt, originEvent)
+          switch (onMoveResult) {
             case 1: {
               willInsertAfter = true;
               break;
