@@ -354,6 +354,27 @@ export function changeDomInfoLevel(domInfo, level = 0, indent = 16) {
   });
 }
 
+/**
+ * 交换两个dom的位置
+ * @param {Element} a
+ * @param {Element} b
+ */
+export function swapDom(a, b) {
+  const p1= a.parentNode
+  const p2= b.parentNode
+  let sib = b.nextSibling; 
+  if(sib=== a) {
+    sib= sib.nextSibling
+  }
+  p1.replaceChild(b, a); 
+  if(sib) {
+    p2.insertBefore(a, sib)
+  } else {
+    p2.appendChild(a)
+  } 
+  return true; 
+}
+
 export default {
   alignmentTableByThList,
   getTransform,
@@ -372,5 +393,6 @@ export default {
   changeDomInfoLevel,
   getLevelFromClassName,
   getLevelRowClassName,
-  getColByTh
+  getColByTh,
+  swapDom
 };

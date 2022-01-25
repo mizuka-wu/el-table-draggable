@@ -331,7 +331,8 @@ export const CONFIG = {
      * @returns {import('@types/sortablejs').SortableOptions}
      */
     OPTION(context, elTableInstance, animation) {
-      let isDragging = false
+      let isDragging = false // 正在拖拽
+      let columnIsMoving = false // 列正在移动
       // 自动对齐
       function autoAlignmentTableByThList(thList) {
         if (!isDragging) {
@@ -343,17 +344,27 @@ export const CONFIG = {
         })
       }
 
+      /** 列宽的虚拟dom */
+      let colDomInfoList = []
+
       return {
         onStart() {
-          const colList = document.querySelectorAll(".el-table__header-wrapper colgroup col")
-          colList.forEach(item => {
-            item.setAttribute('data-origin-width', item.getAttribute('width'))
-          })
-          isDragging = true
+          const thList = Array.from(elTableInstance.$el.querySelector(CONFIG.COLUMN.WRAPPER).childNodes)
 
-          // 自动对齐
-          const thList = document.querySelector(CONFIG.COLUMN.WRAPPER).childNodes
-          autoAlignmentTableByThList(Array.from(thList))
+          colDomInfoList = thList.map(th => {
+            const col = dom.getColByTh(th)
+            const width = col.getAttribute('width')
+            return {
+              el: col,
+              thEl: th,
+              width: width,
+              originWidth: width
+            }
+          })
+
+          // dragging状态自动调用对齐
+          isDragging = true
+          autoAlignmentTableByThList(thList)
         },
         setData(dataTransfer, dragEl) {
           /**
@@ -409,16 +420,20 @@ export const CONFIG = {
           /**
            * 对dom进行操作
            */
-          const thList = [dragged, related];
+          const thList = willInsertAfter ? [dragged, related] : [related, dragged];
           // 临时修改两个的宽度, 需要在下个循环触发，省的宽度不一致导致因为dom变化再次触发拖拽
+          const colList = thList
+          .map(th => colDomInfoList.find(item => item.thEl === th))
+          // 交换宽度
+          const [fromCol, toCol] = colList
           setTimeout(() => {
-            const colList = thList.map(th => dom.getColByTh(th))
-            // 交换宽度
-            const [fromWidth, toWidth] = colList.map(col => col.getAttribute("width"))
-            const [fromCol, toCol] = colList
-            fromCol.setAttribute("width", toWidth)
-            toCol.setAttribute("width", fromWidth)
+            dom.swapDom(fromCol.el, toCol.el)
           })
+          // const temp = fromCol.originWidth
+          // fromCol.width = toCol.originWidth
+          // toCol.width = temp
+          // fromCol.el.setAttribute('width', fromCol.width)
+          // toCol.el.setAttribute('width', toCol.width)
 
           return true;
         },
@@ -426,10 +441,8 @@ export const CONFIG = {
           const PROP = "columns";
           dom.cleanUp();
           // 清除所有临时交换产生的设定和变量
-          document.querySelectorAll("[data-origin-width]")
-          .forEach(item => {
-            item.setAttribute("width", item.getAttribute("data-origin-width"))
-            item.removeAttribute("data-origin-width")
+          colDomInfoList.forEach(({ el, originWidth }) => {
+            el.setAttribute('width', originWidth)
           })
 
           isDragging = false
