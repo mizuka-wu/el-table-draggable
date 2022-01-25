@@ -268,6 +268,63 @@ export class MappingOberver {
   }
 }
 
+/**
+ * 给每一行增加占位，方便判定是拖入底下还是拖入同级
+ * @todo 增加逻辑
+ */
+// eslint-disable-next-line no-unused-vars
+function rowAddPlaceholder() {
+              /**
+             * 增加自身子列的占位行
+             */
+            // if (isTreeTable && domMapping) {
+            //   const { treeProps } = draggableTable;
+            //   const { children } = treeProps;
+            //   /** @type {{ mapping: DomMapping }} */
+            //   const { mapping } = domMapping
+            //   const trList = Array.from(mapping.values()).filter(({ type = 'leaf' }) => type === 'leaf')
+            //   trList.forEach(domInfo => {
+            //     const { level, childrenList, el, data, index } = domInfo
+            //     const childrenData = data[index][children]
+            //     if (childrenData) {
+            //       const childrenProxyEl = el.cloneNode()
+            //       childrenProxyEl.classList.add(PLACEHOLDER_CSS)
+            //       childrenProxyEl.style.width = el.offsetWidth + 'px'
+            //       /** @type {DomInfo} */
+            //       const proxyDomInfo = {
+            //         el: childrenProxyEl,
+            //         elIndex: -1,
+            //         level: level + 1,
+            //         data: childrenData,
+            //         index: 0,
+            //         type: 'proxy',
+            //         parent: domInfo,
+            //         childrenList: []
+            //       }
+                  
+            //       let referenceEl = el
+            //       if (childrenList.length) {
+            //         referenceEl = childrenList[childrenList.length - 1].el
+            //         proxyDomInfo.index = childrenList.length
+            //       }
+            //       childrenList.push(proxyDomInfo) // 数据层面
+            //       dom.insertAfter(childrenProxyEl, referenceEl) // dom层面增加
+            //       mapping.set(childrenProxyEl, proxyDomInfo)
+            //     }
+            //   })
+            //   // 修正所有tr的elIndex
+            //   const trWithProxyTrList = draggableTable.$el.querySelectorAll(
+            //     `${CONFIG.ROW.WRAPPER} tr`
+            //   )
+            //   trWithProxyTrList.forEach((tr, index) => {
+            //     const domInfo = mapping.get(tr)
+            //     if (domInfo) {
+            //       domInfo.elIndex = index
+            //     }
+            //   })
+            // }
+}
+
 export default {
   checkIsTreeTable,
   fixDomInfoByDirection,
