@@ -128,56 +128,6 @@ export const CONFIG = {
               // body-wrapper增加样式，让overflw可显示同时table有个透明区域可拖动
               tableEl.parentNode.classList.add(EMPTY_FIX_CSS);
             }
-
-            /**
-             * 增加自身子列的占位行
-             */
-            // if (isTreeTable && domMapping) {
-            //   const { treeProps } = draggableTable;
-            //   const { children } = treeProps;
-            //   /** @type {{ mapping: DomMapping }} */
-            //   const { mapping } = domMapping
-            //   const trList = Array.from(mapping.values()).filter(({ type = 'leaf' }) => type === 'leaf')
-            //   trList.forEach(domInfo => {
-            //     const { level, childrenList, el, data, index } = domInfo
-            //     const childrenData = data[index][children]
-            //     if (childrenData) {
-            //       const childrenProxyEl = el.cloneNode()
-            //       childrenProxyEl.classList.add(PLACEHOLDER_CSS)
-            //       childrenProxyEl.style.width = el.offsetWidth + 'px'
-            //       /** @type {DomInfo} */
-            //       const proxyDomInfo = {
-            //         el: childrenProxyEl,
-            //         elIndex: -1,
-            //         level: level + 1,
-            //         data: childrenData,
-            //         index: 0,
-            //         type: 'proxy',
-            //         parent: domInfo,
-            //         childrenList: []
-            //       }
-                  
-            //       let referenceEl = el
-            //       if (childrenList.length) {
-            //         referenceEl = childrenList[childrenList.length - 1].el
-            //         proxyDomInfo.index = childrenList.length
-            //       }
-            //       childrenList.push(proxyDomInfo) // 数据层面
-            //       dom.insertAfter(childrenProxyEl, referenceEl) // dom层面增加
-            //       mapping.set(childrenProxyEl, proxyDomInfo)
-            //     }
-            //   })
-            //   // 修正所有tr的elIndex
-            //   const trWithProxyTrList = draggableTable.$el.querySelectorAll(
-            //     `${CONFIG.ROW.WRAPPER} tr`
-            //   )
-            //   trWithProxyTrList.forEach((tr, index) => {
-            //     const domInfo = mapping.get(tr)
-            //     if (domInfo) {
-            //       domInfo.elIndex = index
-            //     }
-            //   })
-            // }
           }
 
           /**
