@@ -3,19 +3,21 @@ export const columns = [
     {
         key: "index",
         type: "number",
-        width: 100,
+        width: 80,
     },
     {
         key: "id",
-        type: "guid"
+        type: "guid",
+        width: 160
     },
     {
         key: "name",
-        type: "name"
+        type: "name",
+        width: 300
     },
     {
         key: "url",
-        type: "url"
+        type: "url",
     },
 ]
 
