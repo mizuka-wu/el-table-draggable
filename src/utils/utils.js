@@ -103,7 +103,7 @@ export function createOrUpdateDomMapping(
 ) {
   // table的配置
   const { data, treeProps } = tableInstance;
-  const { children } = treeProps;
+  const { children = null } = treeProps || {};
   mapping.clear();
   observer && observer.stop(); // 停止监听变化，构建完成后继续监听
   const wrapperEl = tableInstance.$el.querySelector(wrapper);
@@ -165,8 +165,9 @@ export function createOrUpdateDomMapping(
       /**
        * 这里需要两个步骤，如果相差一级的话，当作是parent，
        * 如果超过一级的话，需要回朔查找同级别的对象，以其为基准继续判定
+       * 没有tree的时候默认都为同级
        */
-      const levelGap = level - latestDomInfo.level;
+      const levelGap = children ? level - latestDomInfo.level : 0;
       switch (levelGap) {
         // 同级，继承
         case 0: {
