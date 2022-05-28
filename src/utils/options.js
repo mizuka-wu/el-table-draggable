@@ -271,6 +271,11 @@ export const CONFIG = {
             pullMode
           );
 
+          // clone对象的话，需要从dom层面删除，防止el-table重复渲染
+          if (pullMode === 'clone' && from !== to) {
+            to.removeChild(fromDomInfo.el)
+          }
+
           // 通知更新
           updateElTableInstance(from, to, context, function (tableContext) {
             const draggableContext = tableContext.$parent; // 包裹组件
@@ -316,7 +321,7 @@ export const CONFIG = {
                 domMapping.start();
               }
             }
-          }, 0);
+          }, 1000);
         },
       };
     },
