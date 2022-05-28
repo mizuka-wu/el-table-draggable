@@ -353,7 +353,7 @@ export const CONFIG = {
 
           colDomInfoList = thList.map(th => {
             const col = dom.getColByTh(th)
-            const width = col.getAttribute('width')
+            const width = col ? col.getAttribute('width') : th.offsetWidth
             return {
               el: col,
               thEl: th,
@@ -423,17 +423,16 @@ export const CONFIG = {
           const thList = willInsertAfter ? [dragged, related] : [related, dragged];
           // 临时修改两个的宽度, 需要在下个循环触发，省的宽度不一致导致因为dom变化再次触发拖拽
           const colList = thList
-          .map(th => colDomInfoList.find(item => item.thEl === th))
+            .map(th => colDomInfoList.find(item => item.thEl === th))
           // 交换宽度
           const [fromCol, toCol] = colList
           setTimeout(() => {
             dom.swapDom(fromCol.el, toCol.el)
+            // 交换colDomInfoList内位置
+            const oldIndex = colDomInfoList.indexOf(fromCol)
+            const newIndex = colDomInfoList.indexOf(toCol)
+            exchange(oldIndex, colDomInfoList, newIndex, colDomInfoList)
           })
-          // const temp = fromCol.originWidth
-          // fromCol.width = toCol.originWidth
-          // toCol.width = temp
-          // fromCol.el.setAttribute('width', fromCol.width)
-          // toCol.el.setAttribute('width', toCol.width)
 
           return true;
         },
@@ -472,6 +471,9 @@ export const CONFIG = {
               : tableContext[PROP].map(({ property }) => ({ property }));
             draggableContext.$emit("input", columns);
           });
+
+          // 将顶部的顺序归正
+          console.log(colDomInfoList)
         },
       };
     },
