@@ -265,15 +265,25 @@ export function getTdListByTh(th) {
 }
 
 /**
+ * 
+ * @param {Element} th 
+ * @returns {string}
+ */
+export function getColName(th) {
+  const className = Array.from(th.classList).find((className) =>
+    elTableColumnRegexp.test(className)
+  );
+  return className
+}
+
+/**
  * 从th获取对应的col
  * @todo 支持跨表格获取tds
  * @param {Element} th
  * @returns {Element}
  */
  export function getColByTh(th) {
-  const className = Array.from(th.classList).find((className) =>
-    elTableColumnRegexp.test(className)
-  );
+  const className = getColName(th)
   return document.querySelector(`[name=${className}]`);
 }
 
@@ -394,5 +404,6 @@ export default {
   getLevelFromClassName,
   getLevelRowClassName,
   getColByTh,
+  getColName,
   swapDom
 };
