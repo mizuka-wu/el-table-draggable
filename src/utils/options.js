@@ -425,6 +425,9 @@ export const CONFIG = {
           const colList = thList
             .map(th => colDomInfoList.find(item => item.thEl === th))
           // 交换宽度
+          if (colList.length !== 2) {
+            return true
+          }
           const [fromCol, toCol] = colList
           setTimeout(() => {
             dom.swapDom(fromCol.el, toCol.el)
