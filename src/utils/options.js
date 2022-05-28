@@ -426,6 +426,7 @@ export const CONFIG = {
             .map(th => colDomInfoList.find(item => item.thEl === th))
           // 交换宽度
           if (colList.length !== 2) {
+            throw new Error('无法找到拖拽的th的信息，请检查是否跨表格拖拽了')
             return true
           }
           const [fromCol, toCol] = colList
