@@ -1,7 +1,7 @@
 {
   "name": "el-table-draggable",
   "description": "make el-table draggable, support row, column, expanded, sortable.js",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "author": {
     "name": "mizuka",
     "email": "mizuka.wu@outlook.com",
@@ -60,6 +60,7 @@
     "vue-router": "^3.5.3",
     "vue-template-compiler": "^2.6.11"
   },
+  "license": "MIT",
   "browserslist": [
     "> 1%",
     "last 2 versions",
