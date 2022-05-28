@@ -12,14 +12,14 @@
         <div>
           <h2>{{ name }}</h2>
           <component :is="key" />
-          <el-link
+          <el-button
             :href="`https://github.com/mizuka-wu/el-table-draggable/blob/master/src/examples/${key}.vue`"
             style="margin: 16px 0"
             type="primary"
           >
             查看源文件
             <i class="el-icon-view el-icon--right"></i>
-          </el-link>
+          </el-button>
           <hr />
         </div>
       </el-tab-pane>
