@@ -149,6 +149,7 @@ export function createOrUpdateDomMapping(
         if (latestDomInfo) {
           Object.assign(domInfo, {
             ...latestDomInfo,
+            childrenList: [],
             el: tr,
             elIndex: index,
             type: "proxy",
@@ -162,12 +163,13 @@ export function createOrUpdateDomMapping(
       // 创建dom对应的信息
       const level = getLevelFromClassName(tr.className);
       domInfo.level = level;
+
       /**
        * 这里需要两个步骤，如果相差一级的话，当作是parent，
        * 如果超过一级的话，需要回朔查找同级别的对象，以其为基准继续判定
        * 没有tree的时候默认都为同级
        */
-      const levelGap = children ? level - latestDomInfo.level : 0;
+      const levelGap = level - latestDomInfo.level
       switch (levelGap) {
         // 同级，继承
         case 0: {
