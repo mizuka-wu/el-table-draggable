@@ -140,7 +140,9 @@ export const config = {
                 dom.cleanUp();
                 // 清除所有临时交换产生的设定和变量
                 colDomInfoList.forEach(({ el, originWidth }) => {
-                    el.setAttribute('width', originWidth)
+                    if (el) {
+                        el.setAttribute('width', originWidth)
+                    }
                 })
 
                 isDragging = false
