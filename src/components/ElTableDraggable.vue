@@ -8,7 +8,7 @@
   /* eslint-disable no-unused-vars */
   import { Sortable } from "sortablejs";
   import getUa from "../utils/ua";
-  import { CONFIG, DOM_MAPPING_NAME } from "../utils/options";
+  import { CONFIG, DOM_MAPPING_NAME } from "../utils/options/index";
 
   export default {
     name: "ElementUiElTableDraggable",
