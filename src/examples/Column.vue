@@ -7,6 +7,7 @@
           :label="column.key"
           :prop="column.key"
           :width="column.width"
+          :column-key="column.key"
           v-for="column of columns"
         ></el-table-column>
       </el-table>

@@ -170,17 +170,6 @@ export const config = {
                         : tableContext[PROP].map(({ property }) => ({ property }));
                     draggableContext.$emit("input", columns);
                 });
-
-                // 将顶部的宽度顺序矫正
-                if (colDomInfoList[0] && colDomInfoList[0].el) {
-                    /** @type {Element} */
-                    const colContainer = colDomInfoList[0].el.parentNode
-                    const html = colDomInfoList.map(item => {
-                        const el = `<col name="${dom.getColName(item.thEl)}" width="${item.width}">`
-                        return el
-                    }).join('\n')
-                    colContainer.innerHTML = html
-                }
             },
         };
     },
