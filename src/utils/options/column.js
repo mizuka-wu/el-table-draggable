@@ -81,7 +81,7 @@ export const config = {
                 // 拖拽位置需要偏移到对应的列上
                 dataTransfer.setDragImage(
                     wrapper,
-                    offsetLeft + offsetWidth / 2,
+                    (offsetLeft * 2) + (offsetWidth / 2),
                     offsetHeight / 2
                 );
                 setTimeout(() => {
