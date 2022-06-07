@@ -27,7 +27,15 @@ export default {
       columns,
       list: createData(),
       code: `<ElTableDraggable column>
-    <el-table row-key="必填" :data="list">
+    <el-table :data="list">
+       <el-table-column
+          :key="column.key"
+          :label="column.key"
+          :prop="column.key"
+          :width="column.width"
+          :column-key="required!!!!!"
+          v-for="column of columns"
+        ></el-table-column>
     </el-table>
 </ElTableDraggable>`,
     };
