@@ -277,59 +277,96 @@ export class MappingOberver {
  */
 // eslint-disable-next-line no-unused-vars
 function rowAddPlaceholder() {
-              /**
-             * 增加自身子列的占位行
-             */
-            // if (isTreeTable && domMapping) {
-            //   const { treeProps } = draggableTable;
-            //   const { children } = treeProps;
-            //   /** @type {{ mapping: DomMapping }} */
-            //   const { mapping } = domMapping
-            //   const trList = Array.from(mapping.values()).filter(({ type = 'leaf' }) => type === 'leaf')
-            //   trList.forEach(domInfo => {
-            //     const { level, childrenList, el, data, index } = domInfo
-            //     const childrenData = data[index][children]
-            //     if (childrenData) {
-            //       const childrenProxyEl = el.cloneNode()
-            //       childrenProxyEl.classList.add(PLACEHOLDER_CSS)
-            //       childrenProxyEl.style.width = el.offsetWidth + 'px'
-            //       /** @type {DomInfo} */
-            //       const proxyDomInfo = {
-            //         el: childrenProxyEl,
-            //         elIndex: -1,
-            //         level: level + 1,
-            //         data: childrenData,
-            //         index: 0,
-            //         type: 'proxy',
-            //         parent: domInfo,
-            //         childrenList: []
-            //       }
-                  
-            //       let referenceEl = el
-            //       if (childrenList.length) {
-            //         referenceEl = childrenList[childrenList.length - 1].el
-            //         proxyDomInfo.index = childrenList.length
-            //       }
-            //       childrenList.push(proxyDomInfo) // 数据层面
-            //       dom.insertAfter(childrenProxyEl, referenceEl) // dom层面增加
-            //       mapping.set(childrenProxyEl, proxyDomInfo)
-            //     }
-            //   })
-            //   // 修正所有tr的elIndex
-            //   const trWithProxyTrList = draggableTable.$el.querySelectorAll(
-            //     `${CONFIG.ROW.WRAPPER} tr`
-            //   )
-            //   trWithProxyTrList.forEach((tr, index) => {
-            //     const domInfo = mapping.get(tr)
-            //     if (domInfo) {
-            //       domInfo.elIndex = index
-            //     }
-            //   })
-            // }
+  /**
+ * 增加自身子列的占位行
+ */
+  // if (isTreeTable && domMapping) {
+  //   const { treeProps } = draggableTable;
+  //   const { children } = treeProps;
+  //   /** @type {{ mapping: DomMapping }} */
+  //   const { mapping } = domMapping
+  //   const trList = Array.from(mapping.values()).filter(({ type = 'leaf' }) => type === 'leaf')
+  //   trList.forEach(domInfo => {
+  //     const { level, childrenList, el, data, index } = domInfo
+  //     const childrenData = data[index][children]
+  //     if (childrenData) {
+  //       const childrenProxyEl = el.cloneNode()
+  //       childrenProxyEl.classList.add(PLACEHOLDER_CSS)
+  //       childrenProxyEl.style.width = el.offsetWidth + 'px'
+  //       /** @type {DomInfo} */
+  //       const proxyDomInfo = {
+  //         el: childrenProxyEl,
+  //         elIndex: -1,
+  //         level: level + 1,
+  //         data: childrenData,
+  //         index: 0,
+  //         type: 'proxy',
+  //         parent: domInfo,
+  //         childrenList: []
+  //       }
+
+  //       let referenceEl = el
+  //       if (childrenList.length) {
+  //         referenceEl = childrenList[childrenList.length - 1].el
+  //         proxyDomInfo.index = childrenList.length
+  //       }
+  //       childrenList.push(proxyDomInfo) // 数据层面
+  //       dom.insertAfter(childrenProxyEl, referenceEl) // dom层面增加
+  //       mapping.set(childrenProxyEl, proxyDomInfo)
+  //     }
+  //   })
+  //   // 修正所有tr的elIndex
+  //   const trWithProxyTrList = draggableTable.$el.querySelectorAll(
+  //     `${CONFIG.ROW.WRAPPER} tr`
+  //   )
+  //   trWithProxyTrList.forEach((tr, index) => {
+  //     const domInfo = mapping.get(tr)
+  //     if (domInfo) {
+  //       domInfo.elIndex = index
+  //     }
+  //   })
+  // }
+}
+
+/**
+ * 将某个元素从某个列表插入到另一个对应位置
+ * @param {number} oldIndex
+ * @param {any[]} fromList
+ * @param {nmber} newIndex
+ * @param {any[]} toList
+ * @param {import('@types/sortablejs').PullResult} pullMode
+ */
+export function exchange(oldIndex, fromList, newIndex, toList, pullMode) {
+  // 核心交换
+  const target = fromList[oldIndex];
+  // move的情况
+  if (pullMode !== "clone") {
+    fromList.splice(oldIndex, 1);
+  }
+  toList.splice(newIndex, 0, target);
+}
+
+/**
+ * 通知收到影响的表格
+ * @param {Element} from
+ * @param {Element} to
+ * @param {Map<Element, Vue>} context
+ * @param {(tableInstance: Vue) => any} handler
+ */
+export function updateElTableInstance(from, to, context, handler) {
+  const affected = from === to ? [from] : [from, to];
+  affected.forEach((table) => {
+    if (context.has(table)) {
+      const tableInstance = context.get(table);
+      handler(tableInstance);
+    }
+  });
 }
 
 export default {
   checkIsTreeTable,
   fixDomInfoByDirection,
   getOnMove,
+  exchange,
+  updateElTableInstance
 };
