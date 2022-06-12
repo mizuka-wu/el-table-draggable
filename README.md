@@ -71,6 +71,7 @@ support drag column
 #### onMove
 
 set onMove callback
+
 ```javascript
 onMove: function (/**Event*/evt, /**Event*/originalEvent, domInfo) {
    // Example: https://jsbin.com/nawahef/edit?js,output
@@ -106,9 +107,7 @@ data or cloumn after change
 
 ## todo
 
-- [x] Support column
-- [x] support ghost of expanded row or the rest of column
-- [ ] 接入 html2canvas 将展开/列部分设定到 dataTransfer.setDragImage 上实现拖拽优化
+- [ ] Tree Table
 
 ## Donation
 

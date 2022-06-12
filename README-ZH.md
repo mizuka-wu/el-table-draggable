@@ -4,6 +4,17 @@
 
 [demo 请查看](https://www.mizuka.top/el-table-draggable/)
 
+有问题请提交issue！我不是义务解答员
+
+欢迎提mr改进
+
+## 已知问题
+
+建议使用树状表格拖拽的人不要使用本插件
+
+1. 树状表格向下拖拽/跨越层级拖拽时候move/end的显示结果不一致
+2. 树状表格无法判断是拖入子级/同级
+
 ## 特性
 
 - 支持几乎所有`sortablejs`的配置
@@ -67,6 +78,7 @@ export default {
 #### onMove
 
 支持`onMove`回调
+
 ```javascript
 onMove: function (/**Event*/evt, /**Event*/originalEvent, domInfo) {
    // Example: https://jsbin.com/nawahef/edit?js,output
@@ -110,9 +122,7 @@ onMove: function (/**Event*/evt, /**Event*/originalEvent, domInfo) {
 
 ## todo
 
-- [x] 支持列拖动
-- [x] 支持拖动展开的列的时候`ghost`显示展开的部分
-- [ ] 接入 html2canvas 将展开/列部分设定到 dataTransfer.setDragImage 上实现拖拽优化
+- [ ] 改进树状表格拖拽
 
 ## 捐赠
 
