@@ -12,6 +12,7 @@ export const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
 export const ANIMATED_CSS = "el-table-draggable__animated";
 export const INDENT_CSS = "el-table__indent";
 export const INDENT_PLACEHOLDER_CSS = 'el-table__placeholder' // 子节点的跟随函数
+export const CUSTOMER_INDENT_PLACEHOLDER_CSS = 'el-table-draggable__indent-placeholder' // 子节点的跟随函数
 export const CUSTOMER_INDENT_CSS = "el-table-draggable__indent";
 export const PLACEHOLDER_CSS = 'draggable-dominfo-placeholder'
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
@@ -65,11 +66,18 @@ export function cleanUp() {
   });
   // 移除动画的css
   clearAnimate();
-  
-  // 移除占位行
-  Array.from(document.querySelectorAll(`.${PLACEHOLDER_CSS}`)).forEach((el) => {
-    remove(el)
-  });
+
+  const needRemovedElements = [
+    // 树的子级占位
+    ...Array.from(document.querySelectorAll(`.${PLACEHOLDER_CSS}`)),
+    // 间距的占位
+    ...Array.from(document.querySelectorAll(`.${CUSTOMER_INDENT_PLACEHOLDER_CSS}`))
+  ]
+  setTimeout(() => {
+    needRemovedElements.forEach(el => {
+      remove(el)
+    })
+  })
 }
 
 /**
@@ -143,9 +151,8 @@ export function getTransform(el, target) {
     x: x !== undefined ? x : currentPostion.x,
     y: y !== undefined ? y : currentPostion.y,
   };
-  const transform = `translate(${toPosition.x - originPosition.x}px, ${
-    toPosition.y - originPosition.y
-  }px)`;
+  const transform = `translate(${toPosition.x - originPosition.x}px, ${toPosition.y - originPosition.y
+    }px)`;
   return transform;
 }
 
@@ -237,7 +244,7 @@ export function exchange(prevNode, nextNode, animate = 0) {
   ];
   exchangeList.forEach(({ from, to }) => {
     const targetPosition = getDomPosition(to, false);
-    
+
     // 宽度需要修正
     const { width } = getDomPosition(from, false)
     const targetWidth = targetPosition.width
@@ -288,7 +295,7 @@ export function getColName(th) {
  * @param {Element} th
  * @returns {Element}
  */
- export function getColByTh(th) {
+export function getColByTh(th) {
   const className = getColName(th)
   return document.querySelector(`[name=${className}]`);
 }
@@ -309,7 +316,7 @@ export const alignmentTableByThList = throttle(function alignmentTableByThList(
     });
   });
 },
-1000 / 120);
+  1000 / 120);
 
 /**
  * 切换row的打开还是关闭
@@ -372,11 +379,10 @@ export function changeDomInfoLevel(domInfo, level = 0, indent = 16) {
 
   let placeholderEl = cell.querySelector(`.${INDENT_PLACEHOLDER_CSS}`);
   if (!placeholderEl) {
-    placeholderEl = document.createElement('div')
-    placeholderEl.classList.add(INDENT_PLACEHOLDER_CSS)
+    placeholderEl = document.createElement('span')
+    placeholderEl.classList.add(INDENT_PLACEHOLDER_CSS, CUSTOMER_INDENT_PLACEHOLDER_CSS)
     insertAfter(placeholderEl, indentWrapper)
-  } 
-  console.log(targetIndent)
+  }
   placeholderEl.style.display = targetIndent ? null : 'none';
 }
 
@@ -386,19 +392,19 @@ export function changeDomInfoLevel(domInfo, level = 0, indent = 16) {
  * @param {Element} b
  */
 export function swapDom(a, b) {
-  const p1= a.parentNode
-  const p2= b.parentNode
-  let sib = b.nextSibling; 
-  if(sib=== a) {
-    sib= sib.nextSibling
+  const p1 = a.parentNode
+  const p2 = b.parentNode
+  let sib = b.nextSibling;
+  if (sib === a) {
+    sib = sib.nextSibling
   }
-  p1.replaceChild(b, a); 
-  if(sib) {
+  p1.replaceChild(b, a);
+  if (sib) {
     p2.insertBefore(a, sib)
   } else {
     p2.appendChild(a)
-  } 
-  return true; 
+  }
+  return true;
 }
 
 export default {
