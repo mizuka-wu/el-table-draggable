@@ -161,10 +161,15 @@
   };
 </script>
 <style>
-  .dominfo-placeholder {
-    height: 5px;
-    display: block;
+  .draggable-dominfo-placeholder {
+    height: 2px;
     overflow: hidden;
+    background: #eee;
+    width: 100%;
+  }
+
+  .draggable-dominfo-placeholder:hover {
+    background: #409EFF;
   }
 
   .el-table-draggable__empty-table {

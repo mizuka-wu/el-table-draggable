@@ -1,11 +1,47 @@
-import { getLevelFromClassName } from "./dom";
+import dom, { getLevelFromClassName, PLACEHOLDER_CSS } from "./dom";
 /**
  * 判断当前表格是否已经树状展开了
  * @param {Vue} tableInstance
  * @returns {boolean}
  */
 export function checkIsTreeTable(tableInstance) {
-  return Object.keys(tableInstance.store.states.treeData).length > 0;
+  return Object.keys(tableInstance.store.normalizedData || {}).length > 0;
+}
+
+/**
+ * 如果是树表格，插入占位行
+ * @param {import('types/DomInfo').DomMapping} mapping 
+ * @param {{ children: string, hasChildren: string }} treeProps
+ */
+export function addTreePlaceholderRows(mapping, treeProps) {
+  const domInfoList = Array.from(mapping.values())
+  const root = domInfoList.find(domInfo => domInfo.type === 'root')
+
+  if (!root) {
+    return
+  }
+  const trDomInfoList = domInfoList.filter(item => item.type === 'common')
+  trDomInfoList.forEach(trDomInfo => {
+    /**
+     * 有children的自动添加一个children占位空间
+     */
+    const data = trDomInfo.data[trDomInfo.index]
+    const needAddPlaceholder = data[treeProps.hasChildren] !== false && data[treeProps.children]
+    if (needAddPlaceholder) {
+      const childPlaceholderEl = document.createElement('tr')
+      childPlaceholderEl.classList.add(PLACEHOLDER_CSS)
+      dom.insertAfter(childPlaceholderEl, trDomInfo.el)
+    }
+    
+  })
+  // elIndex重写, 保证获取到对的domInfo
+  const tbody = root.el
+  const trList = Array.from(tbody.childNodes)
+  Array.from(mapping.values()).forEach(domInfo => {
+    if ('elIndex' in domInfo) {
+      domInfo.elIndex = trList.indexOf(domInfo.el)
+    }
+  })
 }
 
 /**
@@ -90,10 +126,10 @@ export function getSameLevelParentDomInfo(domInfo, targetLevel = 0) {
  * 根据类型当前的dom结构，自动构建每个tr的对应数据关系
  * 如果是树状表格，需要增加一个placeholder结构进去
  * @param {Vue} tableInstance ElTable实例
- * @param {Map<Element, import('./options').DomInfo>} [mapping]
+ * @param {Map<Element, import('types/DomInfo').DomInfo>} [mapping]
  * @param {string} [wrapper] 容器css
  * @param {MappingOberver|null} [observer]
- * @returns {Map<Element, import('./options').DomInfo>}
+ * @returns {Map<Element, import('types/DomInfo').DomInfo>}
  */
 export function createOrUpdateDomMapping(
   tableInstance,
@@ -134,6 +170,7 @@ export function createOrUpdateDomMapping(
         el: tr,
         level: 0,
         data,
+        type: 'common',
         index: 0,
         parent: null,
         childrenList: [],
@@ -272,63 +309,6 @@ export class MappingOberver {
 }
 
 /**
- * 给每一行增加占位，方便判定是拖入底下还是拖入同级
- * @todo 增加逻辑
- */
-// eslint-disable-next-line no-unused-vars
-function rowAddPlaceholder() {
-  /**
- * 增加自身子列的占位行
- */
-  // if (isTreeTable && domMapping) {
-  //   const { treeProps } = draggableTable;
-  //   const { children } = treeProps;
-  //   /** @type {{ mapping: DomMapping }} */
-  //   const { mapping } = domMapping
-  //   const trList = Array.from(mapping.values()).filter(({ type = 'leaf' }) => type === 'leaf')
-  //   trList.forEach(domInfo => {
-  //     const { level, childrenList, el, data, index } = domInfo
-  //     const childrenData = data[index][children]
-  //     if (childrenData) {
-  //       const childrenProxyEl = el.cloneNode()
-  //       childrenProxyEl.classList.add(PLACEHOLDER_CSS)
-  //       childrenProxyEl.style.width = el.offsetWidth + 'px'
-  //       /** @type {DomInfo} */
-  //       const proxyDomInfo = {
-  //         el: childrenProxyEl,
-  //         elIndex: -1,
-  //         level: level + 1,
-  //         data: childrenData,
-  //         index: 0,
-  //         type: 'proxy',
-  //         parent: domInfo,
-  //         childrenList: []
-  //       }
-
-  //       let referenceEl = el
-  //       if (childrenList.length) {
-  //         referenceEl = childrenList[childrenList.length - 1].el
-  //         proxyDomInfo.index = childrenList.length
-  //       }
-  //       childrenList.push(proxyDomInfo) // 数据层面
-  //       dom.insertAfter(childrenProxyEl, referenceEl) // dom层面增加
-  //       mapping.set(childrenProxyEl, proxyDomInfo)
-  //     }
-  //   })
-  //   // 修正所有tr的elIndex
-  //   const trWithProxyTrList = draggableTable.$el.querySelectorAll(
-  //     `${CONFIG.ROW.WRAPPER} tr`
-  //   )
-  //   trWithProxyTrList.forEach((tr, index) => {
-  //     const domInfo = mapping.get(tr)
-  //     if (domInfo) {
-  //       domInfo.elIndex = index
-  //     }
-  //   })
-  // }
-}
-
-/**
  * 将某个元素从某个列表插入到另一个对应位置
  * @param {number} oldIndex
  * @param {any[]} fromList
@@ -368,5 +348,6 @@ export default {
   fixDomInfoByDirection,
   getOnMove,
   exchange,
-  updateElTableInstance
+  updateElTableInstance,
+  addTreePlaceholderRows
 };

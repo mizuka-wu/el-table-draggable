@@ -6,7 +6,9 @@ import {
     MappingOberver,
     getOnMove,
     exchange,
-    updateElTableInstance
+    updateElTableInstance,
+    checkIsTreeTable,
+    addTreePlaceholderRows
   } from "@/utils/utils";
   import dom, {
     CUSTOMER_INDENT_CSS,
@@ -35,11 +37,13 @@ export const config = {
       }
       const mappingOberver = new MappingOberver(
         elTableInstance,
-        WRAPPER
+        WRAPPER,
       );
+
       elTableInstance[DOM_MAPPING_NAME] = mappingOberver;
       mappingOberver.rebuild();
       mappingOberver.start();
+      let dommappingTimer = null
 
       return {
         onStart(evt) {
@@ -47,11 +51,14 @@ export const config = {
            * 开始之前对所有表格做一定处理
            */
           for (const draggableTable of context.values()) {
-            // const isTreeTable = checkIsTreeTable(draggableTable);
             const domMapping = draggableTable[DOM_MAPPING_NAME];
             // 暂停dom监听，防止拖拽变化不停触发
             if (domMapping) {
               domMapping.stop();
+            }
+
+            if (checkIsTreeTable(elTableInstance)) {
+              addTreePlaceholderRows(domMapping.mapping, elTableInstance.treeProps)
             }
 
             /**
@@ -254,7 +261,10 @@ export const config = {
            * 全局重新开始监听dom变化
            * 需要在之前dom操作完成之后进行
            */
-          setTimeout(() => {
+          if (dommappingTimer) {
+            clearTimeout(dommappingTimer)
+          }
+          dommappingTimer = setTimeout(() => {
             for (const draggableTable of context.values()) {
               const domMapping = draggableTable[DOM_MAPPING_NAME];
               if (domMapping) {

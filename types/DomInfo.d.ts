@@ -7,7 +7,7 @@ export interface DomInfo {
     parent: DomInfo | null
     childrenList: DomInfo[]
     isShow: boolean
-    type: 'root' | 'leaf' | 'proxy'
+    type: 'root' | 'common' | 'proxy' | 'placeholder'
 }
 
 export type DomMapping = Map<Element, DomInfo>
