@@ -71,7 +71,8 @@ export function cleanUp() {
     // 树的子级占位
     ...Array.from(document.querySelectorAll(`.${PLACEHOLDER_CSS}`)),
     // 间距的占位
-    ...Array.from(document.querySelectorAll(`.${CUSTOMER_INDENT_PLACEHOLDER_CSS}`))
+    ...Array.from(document.querySelectorAll(`.${CUSTOMER_INDENT_PLACEHOLDER_CSS}`)),
+    ...Array.from(document.querySelectorAll(`.${CUSTOMER_INDENT_CSS}`))
   ]
   setTimeout(() => {
     needRemovedElements.forEach(el => {

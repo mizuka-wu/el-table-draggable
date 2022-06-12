@@ -35,6 +35,10 @@ export default {
         {
           index: '空集合，可拖入',
           children: []
+        },
+        {
+          index: '空集合，可拖入2',
+          children: []
         }
       ],
       code: `<ElTableDraggable>
