@@ -38,7 +38,7 @@ export function addTreePlaceholderRows(mapping, treeProps, className = '') {
       childPlaceholderEl.classList.add(PLACEHOLDER_CSS, className)
       const latestChildDomInfo = trDomInfo.childrenList[trDomInfo.childrenList.length - 1]
       dom.insertAfter(
-        childPlaceholderEl, 
+        childPlaceholderEl,
         // 如果没有孩子就插入在自身后面
         (latestChildDomInfo || trDomInfo).el
       )
@@ -56,7 +56,7 @@ export function addTreePlaceholderRows(mapping, treeProps, className = '') {
       }
       mapping.set(childPlaceholderEl, placeholderDomInfo)
     }
-    
+
   })
   // elIndex重写, 保证获取到对的domInfo
   const tbody = root.el
@@ -184,9 +184,9 @@ export function createOrUpdateDomMapping(
 
   // 获取tr列表，同时规避占位用的dom
   const trList = Array.from(wrapperEl.querySelectorAll("tr"))
-  .filter(tr => {
-    return !tr.classList.contains(PLACEHOLDER_CSS)
-  })
+    .filter(tr => {
+      return !tr.classList.contains(PLACEHOLDER_CSS)
+    })
 
   trList.forEach((tr, index) => {
     try {
