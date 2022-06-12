@@ -261,7 +261,9 @@ export function exchange(prevNode, nextNode, animate = 0) {
  * @param {Element} el
  */
 export function remove(el) {
-  el.parentElement.removeChild(el);
+  if (el.parentElement) {
+    el.parentElement.removeChild(el);
+  }
 }
 
 /**
