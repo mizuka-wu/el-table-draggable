@@ -1,4 +1,5 @@
 import dom, { getLevelFromClassName, PLACEHOLDER_CSS } from "./dom";
+
 /**
  * 判断当前表格是否已经树状展开了
  * @param {Vue} tableInstance
@@ -12,25 +13,48 @@ export function checkIsTreeTable(tableInstance) {
  * 如果是树表格，插入占位行
  * @param {import('types/DomInfo').DomMapping} mapping 
  * @param {{ children: string, hasChildren: string }} treeProps
+ * @param {string} className
  */
-export function addTreePlaceholderRows(mapping, treeProps) {
+export function addTreePlaceholderRows(mapping, treeProps, className = '') {
   const domInfoList = Array.from(mapping.values())
   const root = domInfoList.find(domInfo => domInfo.type === 'root')
 
   if (!root) {
     return
   }
+
   const trDomInfoList = domInfoList.filter(item => item.type === 'common')
   trDomInfoList.forEach(trDomInfo => {
     /**
      * 有children的自动添加一个children占位空间
      */
     const data = trDomInfo.data[trDomInfo.index]
+    if (!data) {
+      console.log('这个有问题', trDomInfo, trDomInfo.index, trDomInfo.data)
+    }
     const needAddPlaceholder = data[treeProps.hasChildren] !== false && data[treeProps.children]
     if (needAddPlaceholder) {
       const childPlaceholderEl = document.createElement('tr')
-      childPlaceholderEl.classList.add(PLACEHOLDER_CSS)
-      dom.insertAfter(childPlaceholderEl, trDomInfo.el)
+      childPlaceholderEl.classList.add(PLACEHOLDER_CSS, className)
+      const latestChildDomInfo = trDomInfo.childrenList[trDomInfo.childrenList.length - 1]
+      dom.insertAfter(
+        childPlaceholderEl, 
+        // 如果没有孩子就插入在自身后面
+        (latestChildDomInfo || trDomInfo).el
+      )
+      /** @type {import('types/DomInfo').DomInfo} */
+      const placeholderDomInfo = {
+        el: childPlaceholderEl,
+        elIndex: -1,
+        level: trDomInfo.level + 1,
+        data: data[treeProps.children] || [],
+        index: trDomInfo.data.length, // 最后一位
+        parent: trDomInfo,
+        childrenList: [],
+        isShow: true,
+        type: 'placeholder',
+      }
+      mapping.set(childPlaceholderEl, placeholderDomInfo)
     }
     
   })
@@ -74,33 +98,33 @@ export function isVisible(el) {
  * @param {import('./options').DomInfo} domInfo 目标节点
  * @param {import('./options').DomInfo} originDomInfo 原始正在拖拽的
  * @param {boolean} willInsertAfter
- * @returns {import('./options').DomInfo}
+ * @returns {import('types/DomInfo').DomInfo}
  */
-export function fixDomInfoByDirection(domInfo, originDomInfo) {
-  // if (!willInsertAfter) {
-  //   return domInfo;
-  // }
-  const { childrenList } = domInfo;
-  const visibleChildrenList = childrenList.filter((item) => isVisible(item.el));
-  // 某个行的根节点上
-  if (visibleChildrenList.length > 0) {
-    return visibleChildrenList[0];
-  }
-  // 子节点上
-  else if (domInfo.level > 0) {
-    const { index } = domInfo;
-    const { childrenList } = domInfo.parent;
+// export function fixDomInfoByDirection(domInfo, originDomInfo) {
+//   // if (!willInsertAfter) {
+//   //   return domInfo;
+//   // }
+//   const { childrenList } = domInfo;
+//   const visibleChildrenList = childrenList.filter((item) => isVisible(item.el));
+//   // 某个行的根节点上
+//   if (visibleChildrenList.length > 0) {
+//     return visibleChildrenList[0];
+//   }
+//   // 子节点上
+//   else if (domInfo.level > 0) {
+//     const { index } = domInfo;
+//     const { childrenList } = domInfo.parent;
 
-    // 如果是跨数据层面拖拽，同样需要+1
-    const offset = childrenList.includes(originDomInfo) ? 0 : 1;
-    const list = childrenList.slice(0).map((item) => ({
-      ...item,
-      index: item.index + offset,
-    }));
-    return list[index];
-  }
-  return domInfo;
-}
+//     // 如果是跨数据层面拖拽，同样需要+1
+//     const offset = childrenList.includes(originDomInfo) ? 0 : 1;
+//     const list = childrenList.slice(0).map((item) => ({
+//       ...item,
+//       index: item.index + offset,
+//     }));
+//     return list[index];
+//   }
+//   return domInfo;
+// }
 
 /**
  * 获取最近一个同级的
@@ -158,7 +182,12 @@ export function createOrUpdateDomMapping(
   };
   mapping.set(wrapperEl, latestDomInfo);
 
-  const trList = wrapperEl.querySelectorAll("tr");
+  // 获取tr列表，同时规避占位用的dom
+  const trList = Array.from(wrapperEl.querySelectorAll("tr"))
+  .filter(tr => {
+    return !tr.classList.contains(PLACEHOLDER_CSS)
+  })
+
   trList.forEach((tr, index) => {
     try {
       const { className, style } = tr;
@@ -345,7 +374,7 @@ export function updateElTableInstance(from, to, context, handler) {
 
 export default {
   checkIsTreeTable,
-  fixDomInfoByDirection,
+  // fixDomInfoByDirection,
   getOnMove,
   exchange,
   updateElTableInstance,

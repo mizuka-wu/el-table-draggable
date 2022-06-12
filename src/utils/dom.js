@@ -11,6 +11,7 @@ const LEVEL_REGEXP = /--level-(\d+)/;
 export const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
 export const ANIMATED_CSS = "el-table-draggable__animated";
 export const INDENT_CSS = "el-table__indent";
+export const INDENT_PLACEHOLDER_CSS = 'el-table__placeholder' // 子节点的跟随函数
 export const CUSTOMER_INDENT_CSS = "el-table-draggable__indent";
 export const PLACEHOLDER_CSS = 'draggable-dominfo-placeholder'
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
@@ -346,6 +347,7 @@ export function toggleExpansion(domInfo, expanded = true) {
  * @param {import('./options.js').DomInfo} domInfo
  * @param {number} level
  * @param {number} indent
+ * @param {boolean} showPlaceholder 是否显示expanded的占位
  */
 export function changeDomInfoLevel(domInfo, level = 0, indent = 16) {
   const { el } = domInfo;
@@ -367,6 +369,15 @@ export function changeDomInfoLevel(domInfo, level = 0, indent = 16) {
   domInfo.childrenList.forEach((children) => {
     changeDomInfoLevel(children, level + 1, indent);
   });
+
+  let placeholderEl = cell.querySelector(`.${INDENT_PLACEHOLDER_CSS}`);
+  if (!placeholderEl) {
+    placeholderEl = document.createElement('div')
+    placeholderEl.classList.add(INDENT_PLACEHOLDER_CSS)
+    insertAfter(placeholderEl, indentWrapper)
+  } 
+  console.log(targetIndent)
+  placeholderEl.style.display = targetIndent ? null : 'none';
 }
 
 /**
