@@ -162,10 +162,15 @@
 </script>
 <style>
   .draggable-dominfo-placeholder {
-    height: 2px;
+    height: 5px;
+    display: block;
     overflow: hidden;
-    background: #eee;
+    background: #409EFF;
     width: 100%;
+    position: absolute;
+    left: 15px;
+    right: 0;
+    z-index: 1;
   }
 
   .draggable-dominfo-placeholder:hover {

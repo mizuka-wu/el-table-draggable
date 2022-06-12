@@ -1,3 +1,4 @@
+// eslint-disable-entry-file
 export interface DomInfo {
     el: Element
     elIndex: number

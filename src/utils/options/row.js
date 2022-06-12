@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { DOM_MAPPING_NAME } from './constant'
 import {
-    fixDomInfoByDirection,
+    // fixDomInfoByDirection,
     MappingOberver,
     getOnMove,
     exchange,
@@ -11,6 +11,7 @@ import {
     addTreePlaceholderRows
   } from "@/utils/utils";
   import dom, {
+    cleanUp,
     CUSTOMER_INDENT_CSS,
     EMPTY_FIX_CSS,
   } from "@/utils/dom";
@@ -46,7 +47,7 @@ export const config = {
       let dommappingTimer = null
 
       return {
-        onStart(evt) {
+        onChoose(evt) {
           /**
            * 开始之前对所有表格做一定处理
            */
@@ -58,7 +59,12 @@ export const config = {
             }
 
             if (checkIsTreeTable(elTableInstance)) {
-              addTreePlaceholderRows(domMapping.mapping, elTableInstance.treeProps)
+              // 先移除再创建
+              cleanUp()
+              addTreePlaceholderRows(
+                domMapping.mapping, 
+                elTableInstance.treeProps, 
+                DRAGGABLE.replace('.', ''))
             }
 
             /**
@@ -77,7 +83,8 @@ export const config = {
               tableEl.parentNode.classList.add(EMPTY_FIX_CSS);
             }
           }
-
+        },
+        onStart(evt) {
           /**
            * expanded/树表格的处理, 关闭展开行
            */
@@ -96,15 +103,15 @@ export const config = {
           /** @type {DomInfo} */
           const relatedDomInfo =
             toContext[DOM_MAPPING_NAME].mapping.get(related);
-
           /**
            * 判断是否需要修正当前dragged的对应level
            */
-          let targrtDomInfo = fixDomInfoByDirection(
-            relatedDomInfo,
-            draggedDomInfo,
-            willInsertAfter
-          );
+          // let targrtDomInfo = fixDomInfoByDirection(
+          //   relatedDomInfo,
+          //   draggedDomInfo,
+          //   willInsertAfter
+          // );
+          let targrtDomInfo = relatedDomInfo
 
           const onMove = getOnMove(elTableInstance);
           if (onMove) {
@@ -113,24 +120,29 @@ export const config = {
               related: targrtDomInfo,
             });
 
+            /**
+             * @todo 兼容willInserAfter属性
+             */
             switch (onMoveResutl) {
               case 1: {
                 if (!willInsertAfter) {
-                  targrtDomInfo = fixDomInfoByDirection(
-                    relatedDomInfo,
-                    draggedDomInfo,
-                    true
-                  );
+                  targrtDomInfo = relatedDomInfo
+                  // fixDomInfoByDirection(
+                  //   relatedDomInfo,
+                  //   draggedDomInfo,
+                  //   true
+                  // );
                 }
                 break;
               }
               case -1: {
                 if (willInsertAfter) {
-                  targrtDomInfo = fixDomInfoByDirection(
-                    relatedDomInfo,
-                    draggedDomInfo,
-                    false
-                  );
+                  targrtDomInfo = relatedDomInfo
+                  // fixDomInfoByDirection(
+                  //   relatedDomInfo,
+                  //   draggedDomInfo,
+                  //   false
+                  // );
                 }
                 break;
               }
@@ -177,16 +189,16 @@ export const config = {
           const toDomInfoList = Array.from(
             toContext[DOM_MAPPING_NAME].mapping.values()
           );
-          const originToDomInfo =
+          const toDomInfo =
             toDomInfoList.find((domInfo) => domInfo.elIndex === newIndex) ||
             toContext[DOM_MAPPING_NAME].mapping.get(to);
-          const toDomInfo = {
-            ...fixDomInfoByDirection(
-              originToDomInfo,
-              fromDomInfo,
-              from === to ? newIndex > oldIndex : false
-            ),
-          };
+          // const toDomInfo = {
+          //   ...fixDomInfoByDirection(
+          //     originToDomInfo,
+          //     fromDomInfo,
+          //     from === to ? newIndex > oldIndex : false
+          //   ),
+          // };
 
           // 跨表格index修正
           if (
