@@ -8,7 +8,6 @@ import {
   exchange,
   updateElTableInstance,
   checkIsTreeTable,
-  addTreePlaceholderRows
 } from "@/utils/utils";
 import dom, {
   cleanUp,
@@ -48,6 +47,7 @@ export const config = {
 
     return {
       onChoose() {
+        cleanUp()
         /**
          * 开始之前对所有表格做一定处理
          */
@@ -58,12 +58,12 @@ export const config = {
             domMapping.stop();
           }
 
-          if (checkIsTreeTable(elTableInstance)) {
-            addTreePlaceholderRows(
-              domMapping.mapping,
-              elTableInstance.treeProps,
-              DRAGGABLE.replace('.', ''))
-          }
+          // if (checkIsTreeTable(elTableInstance)) {
+          //   addTreePlaceholderRows(
+          //     domMapping.mapping,
+          //     elTableInstance.treeProps,
+          //     DRAGGABLE.replace('.', ''))
+          // }
 
           /**
            * 解决手动关闭后会有的错位问题
@@ -81,8 +81,6 @@ export const config = {
             tableEl.parentNode.classList.add(EMPTY_FIX_CSS);
           }
         }
-
-        // 如果没有真的开始拖拽，这个处理需要cleanUp
       },
       onStart(evt) {
         /**
@@ -160,6 +158,7 @@ export const config = {
          * @todo 需要增加动画效果，目标直接插入，需要在下一循环，位置变化好后再配置
          */
         setTimeout(() => {
+          /** @type {import('types/DomInfo').DomInfo} */
           relatedDomInfo.childrenList.forEach((children) => {
             // expanded或者是影子行
             if (children.type === "proxy") {
@@ -174,8 +173,6 @@ export const config = {
         dom.changeDomInfoLevel(draggedDomInfo, targrtDomInfo.level, indent);
       },
       onEnd(evt) {
-        dom.cleanUp();
-
         const { to, from, pullMode, newIndex, item, oldIndex } = evt;
         const fromContext = context.get(from);
         const toContext = context.get(to);
@@ -257,10 +254,7 @@ export const config = {
         /** @todo 缓存是否强制expanded */
         toContext.toggleRowExpansion(fromDomInfo.data, true);
 
-        //移除手动生成的位移
-        document.querySelectorAll(`.${CUSTOMER_INDENT_CSS}`).forEach((el) => {
-          dom.remove(el);
-        });
+        cleanUp()
       },
       onUnchoose() {
         cleanUp()
