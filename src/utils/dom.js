@@ -12,7 +12,7 @@ export const EMPTY_FIX_CSS = "el-table-draggable__empty-table";
 export const ANIMATED_CSS = "el-table-draggable__animated";
 export const INDENT_CSS = "el-table__indent";
 export const CUSTOMER_INDENT_CSS = "el-table-draggable__indent";
-export const PLACEHOLDER_CSS = 'dominfo-placeholder'
+export const PLACEHOLDER_CSS = 'draggable-dominfo-placeholder'
 const translateRegexp = /translate\((?<x>.*)px,\s?(?<y>.*)px\)/;
 const elTableColumnRegexp = /el-table_\d*_column_\d*/;
 
@@ -64,6 +64,11 @@ export function cleanUp() {
   });
   // 移除动画的css
   clearAnimate();
+  
+  // 移除占位行
+  Array.from(document.querySelectorAll(`.${PLACEHOLDER_CSS}`)).forEach((el) => {
+    remove(el)
+  });
 }
 
 /**
