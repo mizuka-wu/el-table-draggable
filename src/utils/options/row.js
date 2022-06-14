@@ -8,6 +8,7 @@ import {
   exchange,
   updateElTableInstance,
   checkIsTreeTable,
+  addTreePlaceholderRows
 } from "@/utils/utils";
 import dom, {
   cleanUp,
@@ -43,9 +44,11 @@ export const config = {
     mappingOberver.rebuild();
     mappingOberver.start();
     let dommappingTimer = null
+    let isTreeTable = checkIsTreeTable(elTableInstance) // 防止因为数据原因变化，所以每次选择都判断一次
 
     return {
       onChoose() {
+        isTreeTable = checkIsTreeTable(elTableInstance)
         cleanUp()
         /**
          * 开始之前对所有表格做一定处理
@@ -57,12 +60,12 @@ export const config = {
             domMapping.stop();
           }
 
-          // if (checkIsTreeTable(elTableInstance)) {
-          //   addTreePlaceholderRows(
-          //     domMapping.mapping,
-          //     elTableInstance.treeProps,
-          //     DRAGGABLE.replace('.', ''))
-          // }
+          if (isTreeTable) {
+            addTreePlaceholderRows(
+              domMapping.mapping,
+              elTableInstance.treeProps,
+              DRAGGABLE.replace('.', ''))
+          }
 
           /**
            * 解决手动关闭后会有的错位问题
@@ -100,6 +103,16 @@ export const config = {
         /** @type {DomInfo} */
         const relatedDomInfo =
           toContext[DOM_MAPPING_NAME].mapping.get(related);
+
+        /**
+         * 树状表格的特殊处理，如果碰到的dom不是placeholder，则无视
+         */
+        if (isTreeTable) {
+          if (relatedDomInfo.type !== 'placeholder') {
+            return false
+          }
+        }
+
         /**
          * 判断是否需要修正当前dragged的对应level
          */
@@ -273,7 +286,7 @@ export const config = {
             }
           }
         }, 100);
-      }
+      },
     };
   },
 }
