@@ -1,4 +1,5 @@
-import { getLevelFromClassName, PLACEHOLDER_CSS } from "./dom";
+/* eslint-disable no-unused-vars */
+import { getLevelFromClassName, PLACEHOLDER_CSS, insertAfter, insertBefore } from "./dom";
 
 /**
  * 判断当前表格是否已经树状展开了
@@ -7,6 +8,70 @@ import { getLevelFromClassName, PLACEHOLDER_CSS } from "./dom";
  */
 export function checkIsTreeTable(tableInstance) {
   return Object.keys(tableInstance.store.normalizedData || {}).length > 0;
+}
+
+/**
+ * 如果是树表格，插入占位行
+ * @param {import('types/DomInfo').DomMapping} mapping 
+ * @param {{ children: string, hasChildren: string }} treeProps
+ * @param {string} className
+ */
+export function addTreePlaceholderRows(mapping, treeProps, className = '') {
+  const domInfoList = Array.from(mapping.values())
+  const root = domInfoList.find(domInfo => domInfo.type === 'root')
+
+  if (!root) {
+    return
+  }
+
+  const trDomInfoList = domInfoList.filter(item => item.type === 'common')
+  trDomInfoList.forEach(trDomInfo => {
+    /**
+     * 有children的自动添加一个children占位空间
+     */
+    const data = trDomInfo.data[trDomInfo.index]
+    if (!data) {
+      console.log('这个有问题', trDomInfo, trDomInfo.index, trDomInfo.data)
+    }
+    const hasChildren = data[treeProps.hasChildren] !== false && data[treeProps.children]
+
+    // 插入 上 hasChildren 下三种占位
+    const prevPlaceholderEl = document.createElement('tr')
+    prevPlaceholderEl.classList.add(PLACEHOLDER_CSS, "prev", className)
+
+    // if (needAddPlaceholder) {
+    //   const childPlaceholderEl = document.createElement('tr')
+    //   childPlaceholderEl.classList.add(PLACEHOLDER_CSS, className)
+    //   const latestChildDomInfo = trDomInfo.childrenList[trDomInfo.childrenList.length - 1]
+    //   insertAfter(
+    //     childPlaceholderEl,
+    //     // 如果没有孩子就插入在自身后面
+    //     (latestChildDomInfo || trDomInfo).el
+    //   )
+    //   /** @type {import('types/DomInfo').DomInfo} */
+    //   const placeholderDomInfo = {
+    //     el: childPlaceholderEl,
+    //     elIndex: -1,
+    //     level: trDomInfo.level + 1,
+    //     data: data[treeProps.children] || [],
+    //     index: trDomInfo.data.length, // 最后一位
+    //     parent: trDomInfo,
+    //     childrenList: [],
+    //     isShow: true,
+    //     type: 'placeholder',
+    //   }
+    //   mapping.set(childPlaceholderEl, placeholderDomInfo)
+    // }
+
+  })
+  // elIndex重写, 保证获取到对的domInfo
+  const tbody = root.el
+  const trList = Array.from(tbody.childNodes)
+  Array.from(mapping.values()).forEach(domInfo => {
+    if ('elIndex' in domInfo) {
+      domInfo.elIndex = trList.indexOf(domInfo.el)
+    }
+  })
 }
 
 /**
@@ -316,6 +381,7 @@ export function updateElTableInstance(from, to, context, handler) {
 export default {
   checkIsTreeTable,
   // fixDomInfoByDirection,
+  addTreePlaceholderRows,
   getOnMove,
   exchange,
   updateElTableInstance
