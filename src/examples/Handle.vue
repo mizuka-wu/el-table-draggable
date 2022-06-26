@@ -1,16 +1,12 @@
 <template>
   <div>
     <ElTableDraggable handle=".el-icon-rank" v-on="$listeners">
-      <el-table :data="list" row-key="id">
+      <el-table :data="list" row-key="id" border>
         <el-table-column width="30">
           <i class="el-icon-rank" />
         </el-table-column>
-        <el-table-column
-          :key="column.key"
-          :label="column.key"
-          :prop="column.key"
-          v-for="column of columns"
-        ></el-table-column>
+        <el-table-column :key="column.key" :label="column.key" :prop="column.key" v-for="column of columns">
+        </el-table-column>
       </el-table>
     </ElTableDraggable>
     <ListViewer :value="list" />
