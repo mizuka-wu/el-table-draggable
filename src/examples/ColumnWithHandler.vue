@@ -29,7 +29,7 @@ export default {
     return {
       columns,
       list: createData(),
-      code: `<ElTableDraggable column handler="handler">
+      code: `<ElTableDraggable column handle="handler">
     <el-table :data="list">
        <el-table-column
           :key="column.key"
